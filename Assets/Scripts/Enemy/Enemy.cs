@@ -1,27 +1,37 @@
+using System.Collections;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
+    [Header("몬스터 체력")]
     public int hp;
     public int max_hp = 10;
+
+    [Header("몬스터 공격력")]
     public int damage = 1;
+
+    [Header("정찰 속도")]
     public float patrolSpeed = 2f;
+
+    [Header("공격 범위, 공격 쿨타임")]
     public float attackRange = 2.0f;
     public float attackCooldown = 1f;
+
+    [Header("추격 범위, 속도")]
     public float chaseRange = 10f;
     public float chaseSpeed = 5f;   
-
-    private float lastAttackTime;
-
 
     [Header("공격 판정 위치")]
     public Transform attackPoint;
     public float attackRadius = 0.5f;
     public LayerMask playerLayer;
 
+    private float lastAttackTime;
+
     private enum State { Patrol, Chase, Attack }
     private State state = State.Patrol;
     private Vector2 patrolDir = Vector2.right;
+    public PlayerHealth playerHealth;
     public Transform playerTransform;
     private Rigidbody2D rb;
 
@@ -33,6 +43,8 @@ public class Enemy : MonoBehaviour
 
     private void Update()
     {
+        if (playerHealth.isDead == true) return;
+
         float dist = Vector2.Distance(transform.position, playerTransform.position);
 
         // 상태 결정
@@ -98,10 +110,24 @@ public class Enemy : MonoBehaviour
     public void Damaged(int amount)
     {
         hp -= amount;
+        StartCoroutine(RedFlash());
+
+        Debug.Log("Enemy Damaged");
+
         if (hp <= 0)
         {
             Die();
         }
+    }
+    IEnumerator RedFlash()
+    {
+        GetComponent<SpriteRenderer>().color = Color.red;
+        yield return new WaitForSeconds(0.2f);
+        GetComponent<SpriteRenderer>().color = Color.white;
+        yield return new WaitForSeconds(0.2f);
+        GetComponent<SpriteRenderer>().color = Color.red;
+        yield return new WaitForSeconds(0.2f);
+        GetComponent<SpriteRenderer>().color = Color.white;
     }
 
     private void Die()
