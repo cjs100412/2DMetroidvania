@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Animator), typeof(Rigidbody2D), typeof(SpriteRenderer))]
@@ -23,16 +25,22 @@ public class PlayerMovement : MonoBehaviour
     public LayerMask enemyLayer;
 
     [Header("점프 보정")]
-    [Tooltip("낙하할 때 중력을 얼마나 강하게 할지 (1 이상)")]
-    public float fallMultiplier = 2.5f;
-    [Tooltip("점프 버튼을 빨리 떼었을 때 적용할 중력 배율 (1 이상)")]
+    public float fallMultiplier = 3f;
     public float lowJumpMultiplier = 2f;
 
-    private int jumpCount = 0;
-    private bool isGrounded = false;
+    [Header("대시 세팅")]
+    public float dashSpeed = 20f;         // 대시 속도
+    public float dashDuration = 0.2f;     // 대시 지속 시간
+    private bool isDashing = false;
+    public float dashCooldown = 1f;
+
+
+    public int jumpCount = 0;
+    public bool isGrounded = false;
     private float hInput = 0f;
     private float lastAttackTime;
-
+    private float lastDashTime;
+    private bool canDash = false;
 
 
     private Animator animator;
@@ -51,8 +59,19 @@ public class PlayerMovement : MonoBehaviour
     {
         if (GetComponent<PlayerHealth>().isDead == true) return;
 
+        
+
         // 수평 입력 읽기
         hInput = Input.GetAxisRaw("Horizontal");
+
+        //대시
+        if(Input.GetKeyDown(KeyCode.X) && canDash && !isDashing)
+        {
+            StartCoroutine(PerformDash());
+        }
+
+        if (isDashing)
+            return;
 
         // 점프 입력 처리
         if (Input.GetKeyDown(KeyCode.Space) && jumpCount < maxJumpCount)
@@ -93,8 +112,12 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+
     void FixedUpdate()
     {
+        if (isDashing)
+            return;
+
         // 수평 이동은 FixedUpdate에서
         rb.linearVelocity = new Vector2(hInput * moveSpeed, rb.linearVelocity.y);
 
@@ -113,23 +136,50 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    // 비트리거 Collider2D + OnCollisionEnter/Exit로만 접지 판정
-    void OnCollisionEnter2D(Collision2D col)
+    private IEnumerator PerformDash()
     {
-        if (((1 << col.gameObject.layer) & groundLayer) != 0)
+        if (Time.time >= lastDashTime + dashCooldown)
         {
-            isGrounded = true;
-            jumpCount = 0;  // 지면에 닿으면 점프 카운트 리셋
+            lastDashTime = Time.time;
+
+            isDashing = true;
+            animator.SetTrigger("isDash");
+
+            // 바라보는 방향 판단 (flipX 기준)
+            float dir = spriteRenderer.flipX ? -1f : 1f;
+
+            // 대시 시작: 지정된 속도로 일정 시간 이동
+            float timer = 0f;
+            while (timer < dashDuration)
+            {
+                rb.linearVelocity = new Vector2(dir * dashSpeed, 0f);
+                timer += Time.deltaTime;
+                yield return null;
+            }
+
+            // 대시 끝내고 관성 제거
+            rb.linearVelocity = Vector2.zero;
+            isDashing = false;
         }
     }
 
-    void OnCollisionExit2D(Collision2D col)
-    {
-        if (((1 << col.gameObject.layer) & groundLayer) != 0)
-        {
-            isGrounded = false;
-        }
-    }
+    //// 비트리거 Collider2D + OnCollisionEnter/Exit로만 접지 판정
+    //void OnCollisionEnter2D(Collision2D col)
+    //{
+    //    if (((1 << col.gameObject.layer) & groundLayer) != 0)
+    //    {
+    //        isGrounded = true;
+    //        jumpCount = 0;  // 지면에 닿으면 점프 카운트 리셋
+    //    }
+    //}
+
+    //void OnCollisionExit2D(Collision2D col)
+    //{
+    //    if (((1 << col.gameObject.layer) & groundLayer) != 0)
+    //    {
+    //        isGrounded = false;
+    //    }
+    //}
 
     private void OnAttack()
     {
@@ -151,5 +201,11 @@ public class PlayerMovement : MonoBehaviour
     {
         maxJumpCount = 2;
         Debug.Log("Double Jump UNLOCKED");
+    }
+
+    public void UnlockDash()
+    {
+        canDash = true;
+        Debug.Log("Dash UNLOCKED");
     }
 }

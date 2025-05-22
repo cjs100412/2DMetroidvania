@@ -25,11 +25,13 @@ public class PlayerHealth : MonoBehaviour
 
     public void Damaged(int amount)
     {
+        //플레이어 사망 시 리턴
         if(isDead) return;
+
         hp -= amount;
         StartCoroutine(DamagedFlash());
         Debug.Log("Player Damaged");
-        animator.SetTrigger("isDamaged");
+        
         if(hp <= 0)
         {
             Die();
@@ -38,6 +40,7 @@ public class PlayerHealth : MonoBehaviour
 
     IEnumerator DamagedFlash()
     {
+        animator.SetBool("isDamaged", true);
         GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.3f);
         yield return new WaitForSeconds(0.2f);
         GetComponent<SpriteRenderer>().color = Color.white;
@@ -45,6 +48,7 @@ public class PlayerHealth : MonoBehaviour
         GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.3f);
         yield return new WaitForSeconds(0.2f);
         GetComponent<SpriteRenderer>().color = Color.white;
+        animator.SetBool("isDamaged", false);
     }
     IEnumerator DeadFlash()
     {

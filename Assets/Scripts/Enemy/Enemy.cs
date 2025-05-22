@@ -50,7 +50,7 @@ public class Enemy : MonoBehaviour
         // 상태 결정
         if (dist <= attackRange)
             state = State.Attack;
-        else if (dist <= chaseRange)
+        else if (dist >= attackRange && dist <= chaseRange)
             state = State.Chase;
         else
             state = State.Patrol;
@@ -93,7 +93,7 @@ public class Enemy : MonoBehaviour
 
     private void Attack()
     {
-        rb.linearVelocity = Vector2.zero;
+        //rb.linearVelocity = Vector2.zero;
         if (Time.time >= lastAttackTime + attackCooldown)
         {
             lastAttackTime = Time.time;
