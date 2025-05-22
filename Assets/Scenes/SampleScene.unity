@@ -18663,14 +18663,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 1149840948}
   minimapDisplay: {fileID: 1014275674}
-  mapWidth: 50
-  mapHeight: 30
+  fogDisplay: {fileID: 254066603}
+  mapWidth: 300
+  mapHeight: 100
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 0
   fogResolutionX: 256
   fogResolutionY: 256
   unseenColor: {r: 0, g: 0, b: 0, a: 1}
   visitedColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  visibleColor: {r: 0.6, g: 0.4, b: 0.2, a: 1}
-  viewRadiusTiles: 5
+  visibleColor: {r: 0.7169812, g: 0.7169812, b: 0.7169812, a: 1}
+  viewRadiusTiles: 15
 --- !u!114 &95545658
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18762,7 +18766,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 448
+    m_Bits: 64
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 8400000, guid: 56af370dcc277f549b241428054e0476, type: 2}
   m_TargetDisplay: 0
@@ -43911,6 +43915,78 @@ TilemapCollider2D:
   m_MaximumTileChangeCount: 1000
   m_ExtrusionFactor: 0
   m_UseDelaunayMesh: 0
+--- !u!1 &254066601
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 254066602}
+  - component: {fileID: 254066604}
+  - component: {fileID: 254066603}
+  m_Layer: 5
+  m_Name: FogDisplay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &254066602
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 254066601}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1617898039}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 151, y: -148}
+  m_SizeDelta: {x: 256, y: 256}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &254066603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 254066601}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 8400000, guid: 56af370dcc277f549b241428054e0476, type: 2}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+--- !u!222 &254066604
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 254066601}
+  m_CullTransparentMesh: 1
 --- !u!1 &437884496
 GameObject:
   m_ObjectHideFlags: 0
@@ -44800,8 +44876,8 @@ MonoBehaviour:
     m_Bits: 256
   fallMultiplier: 3
   lowJumpMultiplier: 2
-  dashSpeed: 20
-  dashDuration: 0.2
+  dashSpeed: 30
+  dashDuration: 0.3
   dashCooldown: 1
   jumpCount: 0
   isGrounded: 0
@@ -46413,6 +46489,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 254066602}
   - {fileID: 1014275673}
   - {fileID: 437884497}
   m_Father: {fileID: 0}
