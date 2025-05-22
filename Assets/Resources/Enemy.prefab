@@ -115,7 +115,7 @@ MonoBehaviour:
   playerLayer:
     serializedVersion: 2
     m_Bits: 128
-  playerTransform: {fileID: 3517605977623649621, guid: 8e6ab263e5034a74a94aceef1a723bad, type: 3}
+  playerTransform: {fileID: 0}
 --- !u!61 &3377942259206952574
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -178,7 +178,7 @@ Rigidbody2D:
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_GravityScale: 1
-  m_Material: {fileID: 6200000, guid: 826fb852562be574da9ffee1c2bf6fc0, type: 2}
+  m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
