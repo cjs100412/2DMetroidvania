@@ -153,13 +153,16 @@ public class PlayerMovement : MonoBehaviour
     private IEnumerator DropThroughPlatform()
     {
         // 플레이어 하단에 있는 플랫폼 콜라이더들 탐지
-        Vector2 origin = (Vector2)playerCollider.bounds.center - Vector2.up * (playerCollider.bounds.extents.y + 0.1f);
+        Vector2 origin = (Vector2)playerCollider.bounds.center - Vector2.up * (playerCollider.bounds.extents.y + 2.1f);
         Vector2 size = playerCollider.bounds.size * 0.9f;
         Collider2D[] hits = Physics2D.OverlapBoxAll(origin, size, 0f, platformLayer);
 
         // 해당 플랫폼들과의 충돌 무시
         foreach (var plat in hits)
+        {
             Physics2D.IgnoreCollision(playerCollider, plat, true);
+            Debug.Log("플랫폼 충돌 무시 on");
+        }
 
         // 소량 하강하여 완전히 빠져나오도록 유도
         transform.position += Vector3.down * 0.2f;
@@ -169,7 +172,10 @@ public class PlayerMovement : MonoBehaviour
 
         //충돌 복원
         foreach (var plat in hits)
+        {
             Physics2D.IgnoreCollision(playerCollider, plat, false);
+            Debug.Log("플랫폼 충돌 무시 off");
+        }
         Debug.Log("하향점프");
     }
 

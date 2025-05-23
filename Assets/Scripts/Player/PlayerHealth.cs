@@ -1,90 +1,117 @@
 using System.Collections;
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody2D), typeof(Collider2D), typeof(SpriteRenderer))]
 public class PlayerHealth : MonoBehaviour
 {
-    Animator animator;
+    [Header("스탯")]
+    [Tooltip("플레이어의 최대 체력")]
+    [SerializeField] private int maxHp = 100;  // 최대 체력
+    private int currentHp;                      // 현재 체력
 
-    [Header("플레이어 체력")]
-    public int Max_hp = 100;
-    public int hp;
+    // 외부에서 읽기 전용으로, 내부에서만 변경
+    public bool isDead { get; private set; } = false;
 
-    public bool isDead = false;
+    // 캐싱할 컴포넌트들
+    private Animator animator;
+    private SpriteRenderer spriteRenderer;
+    private Collider2D col;
+    private Rigidbody2D rb;
 
+    // 애니메이터 파라미터 해시
+    private static readonly int HashDamaged = Animator.StringToHash("isDamaged");  // 피격 플래그
+    private static readonly int HashDead = Animator.StringToHash("isDead");     // 사망 플래그
 
-    private void Awake()
+    void Awake()
     {
+        // 컴포넌트 캐싱
         animator = GetComponent<Animator>();
-        hp = Max_hp;
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        col = GetComponent<Collider2D>();
+        rb = GetComponent<Rigidbody2D>();
+
+        // 체력 초기화
+        currentHp = maxHp;
     }
 
-    private void Update()
-    {
-
-    }
-
+    /// <summary>
+    /// 플레이어가 데미지를 입었을 때 호출
+    /// </summary>
     public void Damaged(int amount)
     {
-        //플레이어 사망 시 리턴
-        if(isDead) return;
+        // 이미 사망한 상태라면 무시
+        if (isDead)
+            return;
 
-        hp -= amount;
-        StartCoroutine(DamagedFlash());
-        Debug.Log("Player Damaged");
-        
-        if(hp <= 0)
-        {
+        // 체력 차감, 음수 방지
+        currentHp = Mathf.Max(currentHp - amount, 0);
+        StartCoroutine(DamagedFlash());   // 피격 깜박임 효과
+        Debug.Log("플레이어 데미지: " + amount);
+
+        // 체력이 0 이하이면 사망 처리
+        if (currentHp <= 0)
             Die();
+    }
+
+    /// <summary>
+    /// 피격 시 깜박임 코루틴
+    /// </summary>
+    private IEnumerator DamagedFlash()
+    {
+        animator.SetBool(HashDamaged, true);  // 애니메이터에 피격 상태 설정
+        // 깜박임 효과 (반투명 ↔ 원래 색) 반복
+        yield return FlashCoroutine(0.3f, 3, 0.2f);
+        animator.SetBool(HashDamaged, false); // 피격 상태 해제
+    }
+
+    /// <summary>
+    /// 깜박임 공통 코루틴 (투명도, 반복 횟수, 간격)
+    /// </summary>
+    private IEnumerator FlashCoroutine(float flashAlpha, int flashes, float interval)
+    {
+        Color original = spriteRenderer.color;
+        Color flashColor = new Color(1f, 1f, 1f, flashAlpha);
+
+        for (int i = 0; i < flashes; i++)
+        {
+            spriteRenderer.color = flashColor;      // 반투명 설정
+            yield return new WaitForSeconds(interval);
+            spriteRenderer.color = original;        // 원래 색 복원
+            yield return new WaitForSeconds(interval);
         }
     }
 
-    IEnumerator DamagedFlash()
+    /// <summary>
+    /// 플레이어 사망 처리
+    /// </summary>
+    private void Die()
     {
-        animator.SetBool("isDamaged", true);
-        GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.3f);
-        yield return new WaitForSeconds(0.2f);
-        GetComponent<SpriteRenderer>().color = Color.white;
-        yield return new WaitForSeconds(0.2f);
-        GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.3f);
-        yield return new WaitForSeconds(0.2f);
-        GetComponent<SpriteRenderer>().color = Color.white;
-        animator.SetBool("isDamaged", false);
-    }
-    IEnumerator DeadFlash()
-    {
-        GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.3f);
-        yield return new WaitForSeconds(0.3f);
-        GetComponent<SpriteRenderer>().color = Color.white;
-        yield return new WaitForSeconds(0.3f);
-        GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.3f);
-        yield return new WaitForSeconds(0.3f);
-        GetComponent<SpriteRenderer>().color = Color.white;
-        yield return new WaitForSeconds(0.3f);
-        GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.3f);
-        yield return new WaitForSeconds(0.3f);
-        GetComponent<SpriteRenderer>().color = Color.white;
-        yield return new WaitForSeconds(0.3f);
-        GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.3f);
-        yield return new WaitForSeconds(0.3f);
-        GetComponent<SpriteRenderer>().color = Color.white;
-        yield return new WaitForSeconds(0.3f);
-    }
-
-    public void Die()
-    {
-        animator.SetTrigger("isDead");
-        Debug.Log("Player Die");
         isDead = true;
+        animator.SetTrigger(HashDead);  // 사망 애니메이션 트리거
+        Debug.Log("플레이어 사망");
 
-        // 콜라이더 비활성화
-        Collider2D col = GetComponent<Collider2D>();
-        if (col != null) col.enabled = false;
+        // 피격 중이던 코루틴 정지
+        StopAllCoroutines();
+        // 스크립트 비활성화로 추가 로직 방지
+        enabled = false;
 
-        // Rigidbody 비활성화
-        Rigidbody2D rb = GetComponent<Rigidbody2D>();
-        if (rb != null) rb.simulated = false;
+        // 콜라이더 및 물리 비활성화
+        col.enabled = false;
+        rb.simulated = false;
 
-        StartCoroutine(DeadFlash());
-        Destroy(gameObject, 5f);
+        // 사망 깜박임 후 오브젝트 제거
+        StartCoroutine(DeathSequence());
+    }
+
+    /// <summary>
+    /// 사망 깜박임 및 제거 코루틴
+    /// </summary>
+    private IEnumerator DeathSequence()
+    {
+        // 느린 깜박임 5회 반복
+        yield return FlashCoroutine(0.3f, 5, 0.3f);
+
+        // 잠시 대기 후 파괴
+        Destroy(gameObject, 0.5f);
     }
 }

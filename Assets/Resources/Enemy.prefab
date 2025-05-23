@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 120003125416253318}
   - component: {fileID: 3388519051059893904}
   - component: {fileID: 7086815820586612186}
+  - component: {fileID: 4411242064917080493}
   m_Layer: 8
   m_Name: Enemy
   m_TagString: Untagged
@@ -103,21 +104,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0e07ce86291e5b4eb0d8b839c4b49b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hp: 0
-  max_hp: 10
+  maxHp: 10
   damage: 10
   patrolSpeed: 2
-  attackRange: 1
-  attackCooldown: 1
   chaseRange: 10
   chaseSpeed: 5
+  attackRange: 1
+  attackCooldown: 1
   attackPoint: {fileID: 7031442552868947433}
   attackRadius: 1
   playerLayer:
     serializedVersion: 2
     m_Bits: 128
-  playerHealth: {fileID: 0}
-  playerTransform: {fileID: 0}
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  edgeDetectHorizOffset: 0.05
+  edgeDetectVertOffset: 0.05
+  edgeDetectRayLength: 0.2
+  playerTransform: {fileID: 4407721655864381487, guid: dca95851477deb14794c63c72f5191da, type: 3}
+  playerHealth: {fileID: 2714803061673032636, guid: dca95851477deb14794c63c72f5191da, type: 3}
 --- !u!61 &120003125416253318
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -171,7 +177,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6844401486568442476}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a140deab37fcfb94989609df41271367, type: 3}
   m_Name: 
@@ -208,3 +214,25 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
+--- !u!95 &4411242064917080493
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6844401486568442476}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 0}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
