@@ -42,6 +42,8 @@ public class PlayerMovement : MonoBehaviour
     private float lastDashTime;
     private bool canDash = false;
 
+    public Collider2D playerCollider;
+    public LayerMask platformLayer;
 
     private Animator animator;
     private Rigidbody2D rb;
@@ -52,7 +54,9 @@ public class PlayerMovement : MonoBehaviour
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        
+        if (playerCollider == null)
+            playerCollider = GetComponent<Collider2D>();
+
     }
 
     void Update()
@@ -76,10 +80,19 @@ public class PlayerMovement : MonoBehaviour
         // 점프 입력 처리
         if (Input.GetKeyDown(KeyCode.Space) && jumpCount < maxJumpCount)
         {
-            // y축 속도만 재설정해서 일정한 높이로 점프
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-            jumpCount++;
-            isGrounded = false;  // 즉시 비접지 상태로 마킹
+            if (Input.GetKey(KeyCode.DownArrow))
+            {
+                StartCoroutine(DropThroughPlatform());
+            }
+            else
+            {
+                // y축 속도만 재설정해서 일정한 높이로 점프
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+                jumpCount++;
+                isGrounded = false;  // 즉시 비접지 상태로 마킹
+            }
+
+            
         }
 
         // 애니메이션 & 스프라이트 반전
@@ -134,6 +147,30 @@ public class PlayerMovement : MonoBehaviour
             float extraGravity = Physics2D.gravity.y * (lowJumpMultiplier - 1);
             rb.linearVelocity += Vector2.up * extraGravity * Time.fixedDeltaTime;
         }
+    }
+
+
+    private IEnumerator DropThroughPlatform()
+    {
+        // 플레이어 하단에 있는 플랫폼 콜라이더들 탐지
+        Vector2 origin = (Vector2)playerCollider.bounds.center - Vector2.up * (playerCollider.bounds.extents.y + 0.1f);
+        Vector2 size = playerCollider.bounds.size * 0.9f;
+        Collider2D[] hits = Physics2D.OverlapBoxAll(origin, size, 0f, platformLayer);
+
+        // 해당 플랫폼들과의 충돌 무시
+        foreach (var plat in hits)
+            Physics2D.IgnoreCollision(playerCollider, plat, true);
+
+        // 소량 하강하여 완전히 빠져나오도록 유도
+        transform.position += Vector3.down * 0.2f;
+
+        // 무시 유지 시간 (게임 플레이에 맞게 조절)
+        yield return new WaitForSeconds(0.7f);
+
+        //충돌 복원
+        foreach (var plat in hits)
+            Physics2D.IgnoreCollision(playerCollider, plat, false);
+        Debug.Log("하향점프");
     }
 
     private IEnumerator PerformDash()
