@@ -56,7 +56,6 @@ public class PlayerMovement : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (playerCollider == null)
             playerCollider = GetComponent<Collider2D>();
-
     }
 
     void Update()

@@ -46,11 +46,9 @@ public class Enemy : MonoBehaviour
     public float edgeDetectRayLength = 0.2f;
 
     [Header("Player Reference")]
-    [Tooltip("플레이어 Transform (Inspector에서 지정)")]
     // 유니티 에디터에서 드래그로 할당 필요
-    [SerializeField] private Transform playerTransform;
-    [Tooltip("플레이어 Health (Inspector에서 지정)")]
-    [SerializeField] private PlayerHealth playerHealth;
+    private Transform playerTransform;
+    private PlayerHealth playerHealth;
 
     // AI 상태 정의: 순찰, 추격, 공격
     private enum State { Patrol, Chase, Attack }
@@ -68,6 +66,10 @@ public class Enemy : MonoBehaviour
 
     void Awake()
     {
+        var player = GameObject.FindWithTag("Player");
+        playerTransform = player.transform;
+        playerHealth = player.GetComponent<PlayerHealth>();
+
         // 컴포넌트들을 캐싱하여 GetComponent 호출 최소화
         rb = GetComponent<Rigidbody2D>();
         col = GetComponent<Collider2D>();

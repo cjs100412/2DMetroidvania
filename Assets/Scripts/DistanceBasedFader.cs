@@ -3,7 +3,7 @@ using UnityEngine;
 [RequireComponent(typeof(CanvasGroup))]
 public class DistanceBasedFader : MonoBehaviour
 {
-    public Transform player;
+    private Transform player;
 
     [Header("이정표(페이드 기준 위치)")]
     public Transform helpTransform;
@@ -15,6 +15,7 @@ public class DistanceBasedFader : MonoBehaviour
 
     void Awake()
     {
+        player = GameObject.FindWithTag("Player").transform;
         canvasGroup = GetComponent<CanvasGroup>();
         if (helpTransform == null) helpTransform = transform.parent;
     }

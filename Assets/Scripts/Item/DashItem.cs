@@ -8,8 +8,7 @@ public class DashItem : MonoBehaviour
     [Header("»πµÊ ¿Ã∆Â∆Æ")]
     public ParticleSystem pickupEffect;
 
-    [Header("Cinemachine Camera")]
-    public CinemachineCamera cinemachineCamera;
+    private CinemachineCamera cinemachineCamera;
 
     [Header("ƒ´∏ﬁ∂Û ¡‹¿Œ")]
     public float zoomFactor = 0.6f;
@@ -25,6 +24,7 @@ public class DashItem : MonoBehaviour
 
     void Awake()
     {
+        cinemachineCamera = GameObject.FindWithTag("Cinemachine").GetComponent<CinemachineCamera>();
         if (cinemachineCamera != null)
             originalOrthoSize = cinemachineCamera.Lens.OrthographicSize;
         else

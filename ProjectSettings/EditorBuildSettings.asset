@@ -6,8 +6,20 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
+    path: Assets/Scenes/Bootstrap.unity
+    guid: 6eb5bfb0103a3f14abfc04124366a316
+  - enabled: 1
+    path: Assets/Scenes/Persistent.unity
+    guid: d71571d4c3dcc5b47a5184fa6f538055
+  - enabled: 1
+    path: Assets/Scenes/StartScene.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
+  - enabled: 1
+    path: Assets/Scenes/DashBossScene.unity
+    guid: eb6475c11223df14794ffa70a91e5b07
+  - enabled: 1
+    path: Assets/Scenes/DoubleJumpBossScene.unity
+    guid: 59e3ef28c3584cc4482129ae4db1064c
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0
