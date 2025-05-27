@@ -18,8 +18,11 @@ public class PlayerHealth : MonoBehaviour
     private Collider2D col;
     private Rigidbody2D rb;
 
+    public float invincibleDuration = 1f;    // 무적 지속 시간
+    private bool isInvincible = false;       // 무적 중인지 여부
+
     // 애니메이터 파라미터 해시
-    private static readonly int HashDamaged = Animator.StringToHash("isDamaged");  // 피격 플래그
+    //private static readonly int HashDamaged = Animator.StringToHash("isDamaged");  // 피격 플래그
     private static readonly int HashDead = Animator.StringToHash("isDead");     // 사망 플래그
 
     void Awake()
@@ -43,8 +46,12 @@ public class PlayerHealth : MonoBehaviour
         if (isDead)
             return;
 
+        // 무적 상태면 무시
+        if (isInvincible) return;
+
         // 체력 차감, 음수 방지
         currentHp = Mathf.Max(currentHp - amount, 0);
+        StartCoroutine(InvincibleCoroutine());
         StartCoroutine(DamagedFlash());   // 피격 깜박임 효과
         Debug.Log("플레이어 데미지: " + amount);
 
@@ -58,10 +65,22 @@ public class PlayerHealth : MonoBehaviour
     /// </summary>
     private IEnumerator DamagedFlash()
     {
-        animator.SetBool(HashDamaged, true);  // 애니메이터에 피격 상태 설정
+        //animator.SetBool(HashDamaged, true);  // 애니메이터에 피격 상태 설정
         // 깜박임 효과 (반투명 ↔ 원래 색) 반복
+        animator.SetTrigger("isDamaged");
         yield return FlashCoroutine(0.3f, 3, 0.2f);
-        animator.SetBool(HashDamaged, false); // 피격 상태 해제
+        //animator.SetBool(HashDamaged, false); // 피격 상태 해제
+    }
+
+    /// <summary>
+    /// 피격 무적 코루틴
+    /// </summary>
+    private IEnumerator InvincibleCoroutine()
+    {
+        isInvincible = true;
+        Debug.Log("무적");
+        yield return new WaitForSeconds(invincibleDuration);
+        isInvincible = false;
     }
 
     /// <summary>
@@ -69,7 +88,8 @@ public class PlayerHealth : MonoBehaviour
     /// </summary>
     private IEnumerator FlashCoroutine(float flashAlpha, int flashes, float interval)
     {
-        Color original = spriteRenderer.color;
+        //Color original = spriteRenderer.color;
+        Color original = new Color(1f, 1f, 1f, 1f);
         Color flashColor = new Color(1f, 1f, 1f, flashAlpha);
 
         for (int i = 0; i < flashes; i++)

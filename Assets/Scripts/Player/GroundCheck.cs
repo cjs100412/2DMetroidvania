@@ -22,6 +22,7 @@ public class GroundCheck : MonoBehaviour
         if (((1 << col.gameObject.layer) & groundLayer) != 0 || ((1 << col.gameObject.layer) & platformLayer) != 0)
         {
             playerMovement.isGrounded = false;
+            //playerMovement.GetComponent<Animator>().SetBool("isGround", true);
         }
     }
 }

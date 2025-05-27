@@ -76,6 +76,8 @@ public class PlayerMovement : MonoBehaviour
         if (isDashing)
             return;
 
+        animator.SetBool("isGround", isGrounded);
+
         // 점프 입력 처리
         if (Input.GetKeyDown(KeyCode.Space) && jumpCount < maxJumpCount)
         {
@@ -86,6 +88,7 @@ public class PlayerMovement : MonoBehaviour
             else
             {
                 // y축 속도만 재설정해서 일정한 높이로 점프
+                animator.SetTrigger("isJumping");
                 rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
                 jumpCount++;
                 isGrounded = false;  // 즉시 비접지 상태로 마킹
@@ -93,11 +96,13 @@ public class PlayerMovement : MonoBehaviour
 
             
         }
+        float vy = rb.linearVelocity.y;
+        animator.SetFloat("VerticalVelocity", vy, 0.1f /*dampTime*/, Time.deltaTime);
 
         // 애니메이션 & 스프라이트 반전
-        animator.SetBool("isRunning", hInput != 0 && isGrounded);
-        animator.SetBool("isJumping", !isGrounded && rb.linearVelocity.y > 0.1f);
-        animator.SetBool("isFalling", !isGrounded && rb.linearVelocity.y < -0.1f);
+        //animator.SetBool("isRunning", hInput != 0 && isGrounded);
+        //animator.SetBool("isJumping", !isGrounded && rb.linearVelocity.y > 0.1f);
+        //animator.SetBool("isFalling", !isGrounded && rb.linearVelocity.y < -0.1f);
 
         if (hInput > 0)
         {
@@ -132,6 +137,10 @@ public class PlayerMovement : MonoBehaviour
 
         // 수평 이동은 FixedUpdate에서
         rb.linearVelocity = new Vector2(hInput * moveSpeed, rb.linearVelocity.y);
+
+        float speed = Mathf.Abs(rb.linearVelocity.x);
+        // 부드러운 파라미터 변화: SetFloat(name, value, dampTime, deltaTime)
+        animator.SetFloat("Speed", speed);
 
         // Better Jump: 떨어질 때 더 빠르게
         if (rb.linearVelocity.y < 0)
