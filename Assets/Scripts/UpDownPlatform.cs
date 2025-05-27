@@ -4,7 +4,7 @@ public class UpDownPlatform : MonoBehaviour
 {
     private bool goDown = false;
 
-    private float speed = 3.0f;
+    private float speed = 2.0f;
     private float max_y = -5;
     private float min_y = -21f;
     private void Update()

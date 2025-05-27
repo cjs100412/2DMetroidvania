@@ -60,12 +60,13 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        if (GetComponent<PlayerHealth>().isDead == true) return;
+        if (gameObject.GetComponent<PlayerHealth>().isDead == true) return;
 
         
 
         // 수평 입력 읽기
         hInput = Input.GetAxisRaw("Horizontal");
+
 
         //대시
         if(Input.GetKeyDown(KeyCode.X) && canDash && !isDashing)
@@ -122,8 +123,9 @@ public class PlayerMovement : MonoBehaviour
                 0f
             );
         }
+        var state = animator.GetCurrentAnimatorStateInfo(0);
 
-        if (Input.GetKeyDown(KeyCode.Z))
+        if (Input.GetKeyDown(KeyCode.Z) && !state.IsName("isAttack"))
         {
             OnAttack();
         }
@@ -137,6 +139,9 @@ public class PlayerMovement : MonoBehaviour
 
         // 수평 이동은 FixedUpdate에서
         rb.linearVelocity = new Vector2(hInput * moveSpeed, rb.linearVelocity.y);
+
+        if (rb.IsSleeping())
+            rb.WakeUp();
 
         float speed = Mathf.Abs(rb.linearVelocity.x);
         // 부드러운 파라미터 변화: SetFloat(name, value, dampTime, deltaTime)
@@ -234,7 +239,6 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnAttack()
     {
-        rb.linearVelocity = Vector2.zero;
         if (Time.time >= lastAttackTime + attackCooldown)
         {
             lastAttackTime = Time.time;
@@ -243,6 +247,8 @@ public class PlayerMovement : MonoBehaviour
             foreach (var hit in hits)
             {
                 hit.GetComponent<Enemy>()?.Damaged(damage);
+                hit.GetComponent<DashBoss>()?.Damaged(damage);
+                hit.GetComponent<DoubleJumpBoss>()?.Damaged(damage);
             }
             animator.SetTrigger("isAttack");
         }

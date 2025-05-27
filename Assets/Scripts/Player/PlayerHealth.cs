@@ -7,7 +7,7 @@ public class PlayerHealth : MonoBehaviour
     [Header("스탯")]
     [Tooltip("플레이어의 최대 체력")]
     [SerializeField] private int maxHp = 100;  // 최대 체력
-    private int currentHp;                      // 현재 체력
+    public int currentHp;                      // 현재 체력
 
     // 외부에서 읽기 전용으로, 내부에서만 변경
     public bool isDead { get; private set; } = false;
@@ -68,7 +68,7 @@ public class PlayerHealth : MonoBehaviour
         //animator.SetBool(HashDamaged, true);  // 애니메이터에 피격 상태 설정
         // 깜박임 효과 (반투명 ↔ 원래 색) 반복
         animator.SetTrigger("isDamaged");
-        yield return FlashCoroutine(0.3f, 3, 0.2f);
+        yield return FlashCoroutine(0.3f, 2, 0.2f);
         //animator.SetBool(HashDamaged, false); // 피격 상태 해제
     }
 
