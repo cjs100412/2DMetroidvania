@@ -6,7 +6,7 @@ using System.Linq;
 public class BossController : MonoBehaviour
 {
     [Header("Components")]
-    Animator Animator;
+    public Animator Animator;
     Transform Player;
 
     [Header("Patterns (ScriptableObjects)")]
