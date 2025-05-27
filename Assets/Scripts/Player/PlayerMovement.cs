@@ -123,9 +123,8 @@ public class PlayerMovement : MonoBehaviour
                 0f
             );
         }
-        var state = animator.GetCurrentAnimatorStateInfo(0);
 
-        if (Input.GetKeyDown(KeyCode.Z) && !state.IsName("isAttack"))
+        if (Input.GetKeyDown(KeyCode.Z))
         {
             OnAttack();
         }
