@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0493bfbf4dcbc114ab64ded6fdb80d7a, type: 3}
   m_Name: CloseRangeKnockbackPattern
   m_EditorClassIdentifier: 
-  knockbackForce: 70
+  knockbackForce: 50
   closeDistance: 10
-  cooldown: 4
+  cooldown: 1

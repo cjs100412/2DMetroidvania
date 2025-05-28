@@ -187,9 +187,9 @@ MonoBehaviour:
   maxHp: 10
   damage: 2
   isDead: 0
-  moveSpeed: 4
-  minDistanceToPlayer: 8
-  maxDistanceToPlayer: 15
+  moveSpeed: 5
+  minDistanceToPlayer: 5
+  maxDistanceToPlayer: 10
   wanderRadius: 5
 --- !u!114 &8083439879757749129
 MonoBehaviour:

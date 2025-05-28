@@ -34,6 +34,13 @@ public class PlayerMovement : MonoBehaviour
     private bool isDashing = false;
     public float dashCooldown = 1f;
 
+    [Header("원거리 공격 세팅")]
+    [Tooltip("발사할 투사체 프리팹")]
+    public GameObject rangedProjectilePrefab;
+    [Tooltip("투사체 속도")]
+    public float rangedProjectileSpeed = 15f;
+    [Tooltip("투사체 발사 쿨타임")]
+    public float rangedAttackCooldown = 1f;
 
     public int jumpCount = 0;
     public bool isGrounded = false;
@@ -42,10 +49,12 @@ public class PlayerMovement : MonoBehaviour
     private float lastDashTime;
     private bool canDash = false;
     public bool isKnockback = false;
-    
+    public bool canRangedAttack = false;
+    private float lastRangedTime = -Mathf.Infinity;
 
     public Collider2D playerCollider;
     public LayerMask platformLayer;
+    public PlayerUI playerUI;
 
     private Animator animator;
     private Rigidbody2D rb;
@@ -129,6 +138,10 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Z))
         {
             OnAttack();
+        }
+        if (Input.GetKeyDown(KeyCode.LeftControl))
+        {
+            OnRangedAttack();
         }
     }
 
@@ -257,6 +270,33 @@ public class PlayerMovement : MonoBehaviour
             animator.SetTrigger("isAttack");
         }
     }
+    private void OnRangedAttack()
+    {
+        // 1) 언락 여부
+        if (!canRangedAttack) return;
+        // 2) 쿨타임 검사
+        if (Time.time < lastRangedTime + rangedAttackCooldown) return;
+        // 3) MP 검사
+        if (gameObject.GetComponent<PlayerHealth>().currentMp < 1) return;
+
+        // 4) 발사
+        lastRangedTime = Time.time;
+        gameObject.GetComponent<PlayerHealth>().currentMp--;
+
+        // 애니메이터에 ranged 트리거가 있다면
+        animator.SetTrigger("isRangedAttack");
+
+        // 투사체 생성 & 발사
+        Vector3 spawnPos = attackPoint.position;
+        Quaternion rot = Quaternion.identity;
+        var proj = Instantiate(rangedProjectilePrefab, spawnPos, rot);
+
+        // 바라보는 방향에 맞춰 속도 설정 (Y축 0)
+        float dir = spriteRenderer.flipX ? -1f : 1f;
+        var prb = proj.GetComponent<Rigidbody2D>();
+        if (prb != null)
+            prb.linearVelocity = new Vector2(dir * rangedProjectileSpeed, 0f);
+    }
 
     public void UnlockDoubleJump()
     {
@@ -268,5 +308,12 @@ public class PlayerMovement : MonoBehaviour
     {
         canDash = true;
         Debug.Log("Dash UNLOCKED");
+    }
+
+    public void UnlockRangedAttack()
+    {
+        canRangedAttack = true;
+        playerUI.ShowMpSlider();
+        Debug.Log("RangedAttack UNLOCKED");
     }
 }

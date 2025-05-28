@@ -88,7 +88,7 @@ public class DashBoss : MonoBehaviour
                 ChooseNewWanderTarget();
             dir = (wanderTarget - (Vector2)transform.position).normalized;
         }
-
+        dir.y = dir.y * 0.1f;
         rb.linearVelocity = dir * moveSpeed;
     }
 

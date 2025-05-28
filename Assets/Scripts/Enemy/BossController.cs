@@ -40,14 +40,12 @@ public class BossController : MonoBehaviour
     {
         if (isBusy)
         {
-            Debug.Log("[Debug] Update → isBusy, skip");
             return;
         }
 
         // 2) 보스가 죽었는지
         if (dashBoss.isDead)
         {
-            Debug.Log("[Debug] Update → isDead, skip");
             return;
         }
 

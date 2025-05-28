@@ -18,8 +18,8 @@ TagManager:
   - Wall
   - Platform
   - Bullet
-  - 
-  - 
+  - RangedAttack
+  - Grapple
   - 
   - 
   - 
@@ -41,6 +41,24 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Background1
+    uniqueID: 2384018029
+    locked: 0
+  - name: Background2
+    uniqueID: 2419159901
+    locked: 0
+  - name: Background3
+    uniqueID: 1921508517
+    locked: 0
+  - name: Background4
+    uniqueID: 2906709061
+    locked: 0
+  - name: Background5
+    uniqueID: 3055816969
+    locked: 0
+  - name: Background6
+    uniqueID: 1884984223
     locked: 0
   m_RenderingLayers:
   - Default

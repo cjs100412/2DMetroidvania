@@ -8,6 +8,8 @@ public class PlayerHealth : MonoBehaviour
     [Tooltip("플레이어의 최대 체력")]
     [SerializeField] private int maxHp = 100;  // 최대 체력
     public int currentHp;                      // 현재 체력
+    [SerializeField] private int maxMp = 5;  // 최대 체력
+    public int currentMp;                      // 현재 체력
 
     // 외부에서 읽기 전용으로, 내부에서만 변경
     public bool isDead { get; private set; } = false;
@@ -35,6 +37,7 @@ public class PlayerHealth : MonoBehaviour
 
         // 체력 초기화
         currentHp = maxHp;
+        currentMp = maxMp;
     }
 
     /// <summary>

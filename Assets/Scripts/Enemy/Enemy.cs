@@ -242,6 +242,9 @@ public class Enemy : MonoBehaviour
     // 사망 처리
     private void Die()
     {
+        if(playerHealth.currentMp < 5)
+            playerHealth.currentMp++;
+
         StopAllCoroutines();  // 진행 중인 코루틴 정지
         enabled = false;      // 스크립트 비활성화
         rb.linearVelocity = Vector2.zero;  // 관성 제거
