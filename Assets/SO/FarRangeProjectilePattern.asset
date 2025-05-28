@@ -13,8 +13,7 @@ MonoBehaviour:
   m_Name: FarRangeProjectilePattern
   m_EditorClassIdentifier: 
   projectilePrefab: {fileID: 8163343930501831133, guid: ff7467b697dc93e4ca982cb641e468db, type: 3}
-  spawnPoint: {fileID: 5834971863085610676, guid: 44c6457ad7721144fa6f29c6c8f1a844, type: 3}
   projectileSpeed: 8
-  minDistance: 5
-  maxDistance: 20
-  cooldown: 3
+  minDistance: 10
+  maxDistance: 40
+  cooldown: 1

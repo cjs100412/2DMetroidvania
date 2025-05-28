@@ -7,25 +7,31 @@ using System.Collections;
 public class CloseRangeKnockbackPattern : ScriptableObject, IBossPattern
 {
     [Header("Knockback Settings")]
-    public float knockbackForce = 500f;
-    public float closeDistance = 3f;
+    public float knockbackForce = 100f;
+    public float closeDistance = 15f;
     public float cooldown = 4f;
 
     float lastUsedTime = -Mathf.Infinity;
     public float Cooldown => cooldown;
 
+    private void OnEnable()
+    {
+        lastUsedTime = -Mathf.Infinity;
+    }
+
     public bool CanExecute(BossController boss, Transform player)
     {
         float dist = Vector2.Distance(boss.transform.position, player.position);
-        return Time.time >= lastUsedTime + cooldown
-            && dist <= closeDistance;
+        return Time.time >= lastUsedTime + cooldown && dist <= closeDistance;
     }
+
+
 
     public IEnumerator Execute(BossController boss, Transform player)
     {
         lastUsedTime = Time.time;
         // 1) 넉백 애니메이션 트리거
-        boss.Animator.SetTrigger("Knockback");
+        //boss.Animator.SetTrigger("Knockback");
         yield return new WaitForSeconds(0.3f);
 
         // 2) 플레이어 넉백
@@ -33,10 +39,14 @@ public class CloseRangeKnockbackPattern : ScriptableObject, IBossPattern
         if (rb != null)
         {
             Vector2 dir = (player.position - boss.transform.position).normalized;
-            rb.AddForce(dir * knockbackForce);
+            rb.AddForce(dir * knockbackForce, ForceMode2D.Impulse);
+            player.gameObject.GetComponent<PlayerMovement>().isKnockback = true;
+            Debug.Log("넉백");
         }
 
         // 3) 후처리 텀
         yield return new WaitForSeconds(0.2f);
+        player.gameObject.GetComponent<PlayerMovement>().isKnockback = false;
+
     }
 }

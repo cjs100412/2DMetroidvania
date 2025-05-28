@@ -41,6 +41,8 @@ public class PlayerMovement : MonoBehaviour
     private float lastAttackTime;
     private float lastDashTime;
     private bool canDash = false;
+    public bool isKnockback = false;
+    
 
     public Collider2D playerCollider;
     public LayerMask platformLayer;
@@ -135,9 +137,12 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isDashing)
             return;
-
-        // 수평 이동은 FixedUpdate에서
-        rb.linearVelocity = new Vector2(hInput * moveSpeed, rb.linearVelocity.y);
+        if (!isKnockback)
+        {
+            // 수평 이동은 FixedUpdate에서
+            rb.linearVelocity = new Vector2(hInput * moveSpeed, rb.linearVelocity.y);
+        }
+        
 
         if (rb.IsSleeping())
             rb.WakeUp();

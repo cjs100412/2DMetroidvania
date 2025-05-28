@@ -9,35 +9,94 @@ public class DashBoss : MonoBehaviour
     CinemachineCamera cinemachineCamera;
     public GameObject wall;
 
+    private Rigidbody2D rb;
+    private BossController bossController;
+    private Transform player;
+
     [Header("카메라 줌인")]
     public float zoomFactor = 0.6f;
     public float zoomDuration = 2f;
+
+    private float originalOrthoSize;
 
     [Header("슬로우 모션")]
     public float slowTimeScale = 0.3f;
     public float slowDuration = 3f;
 
-    private float originalOrthoSize;
 
     public int maxHp = 100;
     private int hp;
     public int damage = 2;
-    private bool isDead = false;
+    public bool isDead = false;
 
+    [Header("Movement Settings")]
+    public float moveSpeed = 3f;  // 이동 속도
+    public float minDistanceToPlayer = 4f;  // 이보다 가까우면 뒤로
+    public float maxDistanceToPlayer = 8f;  // 이보다 멀면 다가감
+    public float wanderRadius = 2f;  // 적정 거리 내 배회 반경
+    private Vector2 wanderTarget;
+
+    public bool IsBusy => bossController != null && bossController.isBusy;
 
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+        rb = GetComponent<Rigidbody2D>();
+        bossController = GetComponent<BossController>();
         cinemachineCamera = GameObject.FindWithTag("Cinemachine").GetComponent<CinemachineCamera>();
+        hp = maxHp;
+
+        var pgo = GameObject.FindWithTag("Player");
+        if (pgo != null) player = pgo.transform;
+        else Debug.LogError("Player 태그 오브젝트가 없습니다.");
 
         if (cinemachineCamera != null)
             originalOrthoSize = cinemachineCamera.Lens.OrthographicSize;
         else
             Debug.LogError("Cinemachine Camera가 할당되지 않았습니다.");
 
-        hp = maxHp;
+        wanderTarget = transform.position;
     }
 
+    void FixedUpdate()
+    {
+        // 죽었거나 패턴 실행 중이면 이동 정지
+        if (isDead || IsBusy)
+        {
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
+
+        // 플레이어와 거리 계산
+        float dist = Vector2.Distance(transform.position, player.position);
+        Vector2 dir;
+
+        if (dist < minDistanceToPlayer)
+        {
+            // 너무 가까워서 뒤로
+            dir = ((Vector2)transform.position - (Vector2)player.position).normalized;
+        }
+        else if (dist > maxDistanceToPlayer)
+        {
+            // 너무 멀어서 다가감
+            dir = ((Vector2)player.position - (Vector2)transform.position).normalized;
+        }
+        else
+        {
+            // 적정 거리 내에서 배회
+            if (Vector2.Distance(transform.position, wanderTarget) < 0.2f)
+                ChooseNewWanderTarget();
+            dir = (wanderTarget - (Vector2)transform.position).normalized;
+        }
+
+        rb.linearVelocity = dir * moveSpeed;
+    }
+
+    private void ChooseNewWanderTarget()
+    {
+        // 현재 위치 기준 반경 내 랜덤 지점 선택
+        wanderTarget = (Vector2)transform.position + Random.insideUnitCircle * wanderRadius;
+    }
 
     // 피해 입었을 때 호출
     public void Damaged(int amount)
