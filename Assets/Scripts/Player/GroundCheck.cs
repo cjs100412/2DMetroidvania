@@ -14,6 +14,7 @@ public class GroundCheck : MonoBehaviour
         {
             playerMovement.isGrounded = true;
             playerMovement.jumpCount = 0;  // 지면에 닿으면 점프 카운트 리셋
+            playerMovement.UnlockHorizontal();
         }
     }
 

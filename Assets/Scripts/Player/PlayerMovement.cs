@@ -42,6 +42,13 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("투사체 발사 쿨타임")]
     public float rangedAttackCooldown = 1f;
 
+
+    private bool horizontalLocked = false;
+
+    public void LockHorizontal() => horizontalLocked = true;
+    public void UnlockHorizontal() => horizontalLocked = false;
+
+
     public int jumpCount = 0;
     public bool isGrounded = false;
     private float hInput = 0f;
@@ -104,6 +111,8 @@ public class PlayerMovement : MonoBehaviour
                 rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
                 jumpCount++;
                 isGrounded = false;  // 즉시 비접지 상태로 마킹
+
+                UnlockHorizontal();
             }
 
             
@@ -145,15 +154,22 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-
     void FixedUpdate()
     {
         if (isDashing)
             return;
+
+        if (GetComponent<GrappleLauncher>().isAttached)
+            return;
+
+
         if (!isKnockback)
         {
-            // 수평 이동은 FixedUpdate에서
-            rb.linearVelocity = new Vector2(hInput * moveSpeed, rb.linearVelocity.y);
+            if (!horizontalLocked)
+            {
+                // 수평 이동
+                rb.linearVelocity = new Vector2(hInput * moveSpeed, rb.linearVelocity.y);
+            }
         }
         
 
@@ -218,6 +234,8 @@ public class PlayerMovement : MonoBehaviour
             isDashing = true;
             animator.SetTrigger("isDash");
 
+            UnlockHorizontal();
+
             // 바라보는 방향 판단 (flipX 기준)
             float dir = spriteRenderer.flipX ? -1f : 1f;
 
@@ -266,6 +284,7 @@ public class PlayerMovement : MonoBehaviour
                 hit.GetComponent<Enemy>()?.Damaged(damage);
                 hit.GetComponent<DashBoss>()?.Damaged(damage);
                 hit.GetComponent<DoubleJumpBoss>()?.Damaged(damage);
+                hit.GetComponent<GrappleBoss>()?.Damaged(damage);
             }
             animator.SetTrigger("isAttack");
         }

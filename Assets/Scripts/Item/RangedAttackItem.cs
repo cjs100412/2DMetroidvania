@@ -40,7 +40,7 @@ public class RangedAttackItem : MonoBehaviour
         PlayerMovement player = other.GetComponent<PlayerMovement>();
         if (player != null)
         {
-            // 더블 점프 해금
+            // 원거리 공격 해금
             player.UnlockRangedAttack();
 
             // 이펙트 재생

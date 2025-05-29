@@ -12,12 +12,12 @@ public class BossController : MonoBehaviour
     [Header("Patterns (ScriptableObjects)")]
     public List<ScriptableObject> patternSOs;
 
-    [Header("패턴 실행에 쓸 스폰 포인트")]
-    public Transform projectileSpawnPoint;
 
     List<IBossPattern> patterns;
-    DashBoss dashBoss;
     public bool isBusy;
+
+    IBossDeath deathCheck;
+    IProjectileSpawner spawner;
 
     void Awake()
     {
@@ -26,14 +26,14 @@ public class BossController : MonoBehaviour
         patterns = patternSOs
             .OfType<IBossPattern>()
             .ToList();
-
+        deathCheck = GetComponent<IBossDeath>();
+        spawner = GetComponent<IProjectileSpawner>();
         Debug.Log($"[Debug] Awake → patterns loaded: {patterns.Count}");
     }
 
     private void Start()
     {
         Animator = GetComponent<Animator>();
-        dashBoss = GetComponent<DashBoss>();
     }
 
     void Update()
@@ -43,11 +43,7 @@ public class BossController : MonoBehaviour
             return;
         }
 
-        // 2) 보스가 죽었는지
-        if (dashBoss.isDead)
-        {
-            return;
-        }
+         if (deathCheck != null && deathCheck.IsDead) return;
 
         float dist = Vector2.Distance(transform.position, Player.position);
         Debug.Log($"[Debug] Update → dist={dist:0.00}");
@@ -64,6 +60,12 @@ public class BossController : MonoBehaviour
 
         Debug.Log($"[Debug] Update → available.Length = {available.Length}");
         if (available.Length == 0) return;
+
+        foreach (var p in available)
+        {
+            if (p is ISpawnPattern spawnPat)
+                spawnPat.SetSpawnPoint(spawner.ProjectileSpawnPoint);
+        }
 
         // 랜덤 또는 우선순위 로직으로 하나 선택
         var choice = available[Random.Range(0, available.Length)];

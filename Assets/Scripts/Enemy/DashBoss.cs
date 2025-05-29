@@ -2,7 +2,7 @@ using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
 
-public class DashBoss : MonoBehaviour
+public class DashBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
 {
     public ParticleSystem dieEffect;
     private SpriteRenderer spriteRenderer;
@@ -23,20 +23,27 @@ public class DashBoss : MonoBehaviour
     public float slowTimeScale = 0.3f;
     public float slowDuration = 3f;
 
-
+    [Header("체력, 데미지")]
     public int maxHp = 100;
     private int hp;
     public int damage = 2;
+
     public bool isDead = false;
 
-    [Header("Movement Settings")]
+    [Header("움직임")]
     public float moveSpeed = 3f;  // 이동 속도
     public float minDistanceToPlayer = 4f;  // 이보다 가까우면 뒤로
     public float maxDistanceToPlayer = 8f;  // 이보다 멀면 다가감
     public float wanderRadius = 2f;  // 적정 거리 내 배회 반경
     private Vector2 wanderTarget;
 
+    private PlayerHealth playerHealth;
+
     public bool IsBusy => bossController != null && bossController.isBusy;
+    public bool IsDead => isDead;
+
+    [SerializeField] Transform projectileSpawnPoint;
+    public Transform ProjectileSpawnPoint => projectileSpawnPoint;
 
     private void Awake()
     {
@@ -55,7 +62,25 @@ public class DashBoss : MonoBehaviour
         else
             Debug.LogError("Cinemachine Camera가 할당되지 않았습니다.");
 
+        playerHealth = player.GetComponent<PlayerHealth>();
+
         wanderTarget = transform.position;
+    }
+
+    private void Update()
+    {
+        // 체력이 0 이하거나 공격 중이라면 상태 전환 로직을 건너뛰고 방향 처리만 수행
+        if (hp <= 0)
+        {
+            HandleFacing();
+            return;
+        }
+
+        // 플레이어가 사망했으면 아무 동작도 하지 않음
+        if (playerHealth.isDead)
+            return;
+
+        HandleFacing();
     }
 
     void FixedUpdate()
@@ -97,6 +122,21 @@ public class DashBoss : MonoBehaviour
         // 현재 위치 기준 반경 내 랜덤 지점 선택
         wanderTarget = (Vector2)transform.position + Random.insideUnitCircle * wanderRadius;
     }
+
+
+    private void HandleFacing()
+    {
+        SetScaleX(player.position.x > transform.position.x ? 1f : -1f);
+
+    }
+
+    private void SetScaleX(float x)
+    {
+        Vector3 s = transform.localScale;
+        s.x = x;
+        transform.localScale = s;
+    }
+
 
     // 피해 입었을 때 호출
     public void Damaged(int amount)

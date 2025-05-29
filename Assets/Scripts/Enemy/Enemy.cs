@@ -49,6 +49,7 @@ public class Enemy : MonoBehaviour
     // 유니티 에디터에서 드래그로 할당 필요
     private Transform playerTransform;
     private PlayerHealth playerHealth;
+    private PlayerInventory playerInventory;
 
     // AI 상태 정의: 순찰, 추격, 공격
     private enum State { Patrol, Chase, Attack }
@@ -69,6 +70,7 @@ public class Enemy : MonoBehaviour
         var player = GameObject.FindWithTag("Player");
         playerTransform = player.transform;
         playerHealth = player.GetComponent<PlayerHealth>();
+        playerInventory = player.GetComponent<PlayerInventory>();
 
         // 컴포넌트들을 캐싱하여 GetComponent 호출 최소화
         rb = GetComponent<Rigidbody2D>();
@@ -244,6 +246,8 @@ public class Enemy : MonoBehaviour
     {
         if(playerHealth.currentMp < 5)
             playerHealth.currentMp++;
+
+        playerInventory.AddCoins(5);
 
         StopAllCoroutines();  // 진행 중인 코루틴 정지
         enabled = false;      // 스크립트 비활성화

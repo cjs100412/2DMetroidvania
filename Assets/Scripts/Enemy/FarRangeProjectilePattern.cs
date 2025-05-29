@@ -5,7 +5,7 @@ using System.Collections;
     fileName = "FarRangeProjectilePattern",
     menuName = "BossPatterns/Far Range Shoot",
     order = 10)]
-public class FarRangeProjectilePattern : ScriptableObject, IBossPattern
+public class FarRangeProjectilePattern : ScriptableObject, ISpawnPattern
 {
     [Header("Projectile Settings")]
     public GameObject projectilePrefab;
@@ -15,6 +15,7 @@ public class FarRangeProjectilePattern : ScriptableObject, IBossPattern
     public float minDistance = 15f;
     public float maxDistance = 40f;
     public float cooldown = 1f;
+    private Transform spawnPoint;
 
     float lastUsedTime = -Mathf.Infinity;
     public float Cooldown => cooldown;
@@ -22,6 +23,11 @@ public class FarRangeProjectilePattern : ScriptableObject, IBossPattern
     private void OnEnable()
     {
         lastUsedTime = -Mathf.Infinity;
+    }
+
+    public void SetSpawnPoint(Transform sp)
+    {
+        spawnPoint = sp;
     }
 
     public bool CanExecute(BossController boss, Transform player)
@@ -49,14 +55,14 @@ public class FarRangeProjectilePattern : ScriptableObject, IBossPattern
         yield return new WaitForSeconds(0.5f);
 
         // (2) 보스 인스턴스의 SpawnPoint 위치에서 투사체 생성
-        if (boss.projectileSpawnPoint == null)
+        if (spawnPoint == null)
         {
             Debug.LogWarning("BossController.projectileSpawnPoint이 할당되지 않았습니다.");
             yield break;
         }
 
-        Vector3 spawnPos = boss.projectileSpawnPoint.position;
-        Quaternion spawnRot = boss.projectileSpawnPoint.rotation;
+        Vector3 spawnPos = spawnPoint.position;
+        Quaternion spawnRot = spawnPoint.rotation;
         var proj = Instantiate(projectilePrefab, spawnPos, spawnRot);
 
         // (3) Rigidbody2D.velocity로 발사
