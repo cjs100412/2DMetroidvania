@@ -184,13 +184,14 @@ MonoBehaviour:
   zoomDuration: 1
   slowTimeScale: 0.3
   slowDuration: 2
-  maxHp: 10
+  maxHp: 50
   damage: 2
   isDead: 0
   moveSpeed: 5
   minDistanceToPlayer: 5
   maxDistanceToPlayer: 10
   wanderRadius: 5
+  projectileSpawnPoint: {fileID: 0}
 --- !u!114 &8083439879757749129
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -207,7 +208,6 @@ MonoBehaviour:
   patternSOs:
   - {fileID: 11400000, guid: e135e2e289f954b4eb2780cdcfb64651, type: 2}
   - {fileID: 11400000, guid: b481e1e0083e486468c805e7d666bbfb, type: 2}
-  projectileSpawnPoint: {fileID: 6135073761377554698}
   isBusy: 0
 --- !u!95 &672728729500062273
 Animator:

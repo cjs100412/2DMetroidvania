@@ -184,7 +184,7 @@ MonoBehaviour:
   zoomDuration: 2
   slowTimeScale: 0.3
   slowDuration: 3
-  maxHp: 100
+  maxHp: 50
   damage: 5
   isDead: 0
   moveSpeed: 3

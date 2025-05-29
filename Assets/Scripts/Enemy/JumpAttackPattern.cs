@@ -20,6 +20,14 @@ public class JumpAttackPattern : ScriptableObject, IBossPattern
     public float damageRadius = 3f;    // 착지 후 넉백 반경
     public int damage = 5;    // 입힐 피해량
 
+    [Header("Ground Check (Pattern Only)")]
+    [Tooltip("보스 발밑 기준으로 땅을 감지할 오프셋")]
+    public Vector2 groundCheckOffset = new Vector2(0, -3f);
+    [Tooltip("땅 감지 반경")]
+    public float groundCheckRadius = 0.2f;
+    [Tooltip("땅 레이어")]
+    public LayerMask groundLayer;
+
     float lastUsedTime = -Mathf.Infinity;
     public float Cooldown => cooldown;
 
@@ -54,14 +62,19 @@ public class JumpAttackPattern : ScriptableObject, IBossPattern
 
         // 3) 착지 대기
         //    보통 점프 후 착지까지 걸리는 시간을 대략 estimate
-        //    프로젝트에 맞게 조절하세요 (예: 1초)
-        yield return new WaitForSeconds(1f);
+        Vector2 checkPos;
+        yield return new WaitUntil(() =>
+        {
+            // 보스 발밑 위치 계산
+            checkPos = (Vector2)boss.transform.position + groundCheckOffset;
+            return Physics2D.OverlapCircle(checkPos, groundCheckRadius, groundLayer) != null;
+        });
 
         // 4) 착지 지점 반경 내 플레이어 데미지
         Collider2D[] hits = Physics2D.OverlapCircleAll(
             boss.transform.position,
             damageRadius,
-            LayerMask.GetMask("Player")  // 혹은 boss.playerLayer
+            LayerMask.GetMask("Player")
         );
         foreach (var hit in hits)
         {

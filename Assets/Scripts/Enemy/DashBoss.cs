@@ -126,7 +126,7 @@ public class DashBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
 
     private void HandleFacing()
     {
-        SetScaleX(player.position.x > transform.position.x ? 1f : -1f);
+        SetScaleX(player.position.x > transform.position.x ? 3f : -3f);
 
     }
 

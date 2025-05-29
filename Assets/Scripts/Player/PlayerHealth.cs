@@ -6,8 +6,8 @@ using UnityEngine.SceneManagement;
 public class PlayerHealth : MonoBehaviour
 {
     [Header("스탯")]
-    [SerializeField] int maxHp = 100;
-    [SerializeField] int maxMp = 5;
+    public int maxHp = 100;
+    public int maxMp = 5;
     public int currentHp { get;  set; }
     public int currentMp { get;  set; }
 
@@ -37,7 +37,6 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
-    /// <summary>죽음 상태에서 복귀할 때 호출</summary>
     public void Respawn(Vector3 position, int hp, int mp)
     {
         // 1) 위치 복원
@@ -61,13 +60,15 @@ public class PlayerHealth : MonoBehaviour
         if (pm != null) pm.enabled = true;
 
         // 5) 체력·마나 복원
-        currentHp = hp;
-        currentMp = mp;
+        currentHp = maxHp;
+        currentMp = maxMp;
         isDead = false;
+
+        GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 1f);
 
         // 6) 애니메이터 상태 리셋
         animator.ResetTrigger("isDead");
-        animator.Play("Idle");  // 또는 기본 아이들 애니메이션
+        animator.Play("Base Layer.Locomotion.WalkRun");  // 또는 기본 아이들 애니메이션
 
         Debug.Log($"Player Respawned @({position.x:0.0},{position.y:0.0}) HP={hp} MP={mp}");
     }
@@ -124,10 +125,10 @@ public class PlayerHealth : MonoBehaviour
 
         // 2) 잠깐 대기(파티클, 연출 여지)
         yield return new WaitForSeconds(0.2f);
-
+        
         // 3) 씬 & 상태 복원
-        //GameManager.I.LoadGame();
-        SceneManager.LoadScene("Bootstrap", LoadSceneMode.Single);
+        GameManager.I.LoadGame();
+        //SceneManager.LoadScene("Bootstrap", LoadSceneMode.Single);
         // 여기서 GameManager가 비동기로 씬을 불러오고
         // 로드 완료 후 데이터를 복원합니다.
 

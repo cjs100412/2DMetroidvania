@@ -27,6 +27,23 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
         savePath = Path.Combine(Application.persistentDataPath, "save.json");
         data = new PlayerData();
+        if (File.Exists(savePath))
+            File.Delete(savePath);
+        InitializeDefaultSave();
+    }
+    void InitializeDefaultSave()
+    {
+        // 현재 씬과 플레이어의 시작 위치, 최대 체력 등 원하는 기본값 세팅
+        data.sceneName = SceneManager.GetActiveScene().name;
+        data.posX = -44.84f;          // 예시 시작 위치 X
+        data.posY = -1f;          // 예시 시작 위치 Y
+        data.hp = 100;         // 기본 HP
+        data.mp = 5;          // 기본 MP
+        data.coins = 0;           // 기본 동전
+
+        string json = JsonUtility.ToJson(data, true);
+        File.WriteAllText(savePath, json);
+        Debug.Log($"[GameManager] Save initialized: {savePath}");
     }
 
     public void SaveGame(Vector2 pos, int hp, int mp, int coins)

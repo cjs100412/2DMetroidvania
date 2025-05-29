@@ -459,7 +459,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &961739750
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -145431,6 +145431,10 @@ PrefabInstance:
       propertyPath: wall
       value: 
       objectReference: {fileID: 5958332949060789647}
+    - target: {fileID: 96141517422230166, guid: 44c6457ad7721144fa6f29c6c8f1a844, type: 3}
+      propertyPath: projectileSpawnPoint
+      value: 
+      objectReference: {fileID: 850378449182231702}
     - target: {fileID: 2403755938370953051, guid: 44c6457ad7721144fa6f29c6c8f1a844, type: 3}
       propertyPath: m_Name
       value: DashBoss
@@ -145480,6 +145484,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 44c6457ad7721144fa6f29c6c8f1a844, type: 3}
+--- !u!4 &850378449182231702 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6135073761377554698, guid: 44c6457ad7721144fa6f29c6c8f1a844, type: 3}
+  m_PrefabInstance: {fileID: 850378449182231701}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &5540911460981348098
 Transform:
   m_ObjectHideFlags: 0

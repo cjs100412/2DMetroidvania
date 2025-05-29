@@ -18,6 +18,7 @@ public class Checkpoint : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
 
+
         // 1) SceneLoader에 다음 부활 씬/스폰 저장
         string zone = SceneManager.GetActiveScene().name;
         SceneLoader.NextZone = zone;
@@ -25,6 +26,8 @@ public class Checkpoint : MonoBehaviour
 
         // 2) 기존 SaveGame 로직도 호출
         var health = other.GetComponent<PlayerHealth>();
+        health.currentHp = health.maxHp;
+        health.currentMp = health.maxMp;
         var inv = other.GetComponent<PlayerInventory>();
         GameManager.I.SaveGame(
             other.transform.position,
