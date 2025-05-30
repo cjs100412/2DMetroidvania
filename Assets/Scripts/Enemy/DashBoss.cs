@@ -12,6 +12,7 @@ public class DashBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
     private Rigidbody2D rb;
     private BossController bossController;
     private Transform player;
+    private PlayerInventory playerInventory;
 
     [Header("카메라 줌인")]
     public float zoomFactor = 0.6f;
@@ -47,6 +48,7 @@ public class DashBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
 
     private void Awake()
     {
+        playerInventory = player.GetComponent<PlayerInventory>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
         bossController = GetComponent<BossController>();
@@ -162,6 +164,7 @@ public class DashBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
         isDead = true;
         if (dieEffect != null)
             Instantiate(dieEffect, transform.position, Quaternion.identity);
+        playerInventory.AddCoins(50);
 
         // 카메라 줌 및 슬로우 모션 시작
         StartCoroutine(DoCameraZoom());

@@ -2665,6 +2665,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 5814977016451840323, guid: dca95851477deb14794c63c72f5191da, type: 3}
+      propertyPath: launchForce
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 5814977016451840323, guid: dca95851477deb14794c63c72f5191da, type: 3}
+      propertyPath: playerLaunchForce
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 7946018117937005841, guid: dca95851477deb14794c63c72f5191da, type: 3}
+      propertyPath: maxHp
+      value: 100
+      objectReference: {fileID: 0}
     - target: {fileID: 9036405933866672044, guid: dca95851477deb14794c63c72f5191da, type: 3}
       propertyPath: playerUI
       value: 

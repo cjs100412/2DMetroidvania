@@ -14,57 +14,42 @@ public class GameBootstrap : MonoBehaviour
 
     private IEnumerator Start()
     {
-        bool isFirstBoot = string.IsNullOrEmpty(SceneLoader.CurrentZone);
-
-        // 1) Persistent 씬 로드
-        if (isFirstBoot)
+        // 1) Persistent 씬은 한 번만 불러오기
+        if(GameManager.I == null)
+        {
             yield return SceneManager.LoadSceneAsync(persistentSceneName, LoadSceneMode.Additive);
-
-        // 2) Zone 전환
-        if (isFirstBoot)
-        {
-            // 최초 진입
-            yield return LoadNewZone(initialZoneName, initialSpawnPointName);
-            SceneLoader.CurrentZone = initialZoneName;
-        }
-        else
-        {
-            // (A) 이전 Zone 언로드
-            string prev = SceneLoader.CurrentZone;
-            if (!string.IsNullOrEmpty(prev))
-            {
-                var sc = SceneManager.GetSceneByName(prev);
-                if (sc.isLoaded)
-                    yield return SceneManager.UnloadSceneAsync(prev);
-            }
-
-            // (B) 다음 Zone 결정 (체크포인트 없으면 prevZone → StartScene)
-            string nextZone = SceneLoader.NextZone;
-            if (string.IsNullOrEmpty(nextZone))
-            {
-                Debug.LogWarning($"NextZone 비어있음 → CurrentZone({prev}) 재사용");
-                nextZone = prev;
-            }
-
-            // (C) 다음 SpawnPoint 결정 (없으면 StartSpawn)
-            string nextSpawn = SceneLoader.NextSpawnPoint;
-            if (string.IsNullOrEmpty(nextSpawn))
-            {
-                Debug.LogWarning($"NextSpawnPoint 비어있음 → initialSpawnPointName({initialSpawnPointName}) 사용");
-                nextSpawn = initialSpawnPointName;
-            }
-
-            // (D) 실제 로드
-            yield return LoadNewZone(nextZone, nextSpawn);
-
-            SceneLoader.CurrentZone = nextZone;
-            SceneLoader.NextZone = null;
-            SceneLoader.NextSpawnPoint = null;
         }
 
-        // 3) Bootstrap 언로드
+        // 2) 이전 Zone 언로드 (빈 값 아닐 때)
+        if (!string.IsNullOrEmpty(SceneLoader.CurrentZone))
+        {
+            Scene prev = SceneManager.GetSceneByName(SceneLoader.CurrentZone);
+            if (prev.IsValid() && prev.isLoaded)
+            {
+                yield return SceneManager.UnloadSceneAsync(prev);
+            }
+        }
+
+        // 3) 다음 Zone/Spawn 결정 (체크포인트 없으면 초기값 사용)
+        string nextZone = string.IsNullOrEmpty(SceneLoader.NextZone)
+            ? initialZoneName
+            : SceneLoader.NextZone;
+        string nextSpawn = string.IsNullOrEmpty(SceneLoader.NextSpawnPoint)
+            ? initialSpawnPointName
+            : SceneLoader.NextSpawnPoint;
+
+        // 4) 새 Zone 로드 & 스폰
+        yield return LoadNewZone(nextZone, nextSpawn);
+
+        // 5) 상태 클리어
+        SceneLoader.CurrentZone = nextZone;
+        SceneLoader.NextZone = null;
+        SceneLoader.NextSpawnPoint = null;
+
+        // 6) Bootstrap 언로드
         yield return SceneManager.UnloadSceneAsync(gameObject.scene.name);
     }
+
 
     private IEnumerator LoadNewZone(string zoneName, string spawnPointName)
     {
@@ -84,7 +69,20 @@ public class GameBootstrap : MonoBehaviour
         {
             var spawn = GameObject.Find(spawnPointName);
             if (spawn != null)
+            {
                 player.transform.position = spawn.transform.position;
+                var ph = player.GetComponent<PlayerHealth>();
+                if (ph != null)
+                    ph.Respawn(spawn.transform.position, ph.maxHp, ph.maxMp);
+                var inv = player.GetComponent<PlayerInventory>();
+                if (inv != null)
+                {
+                    // 기존 코인 전부 제거
+                    inv.SpendCoins(inv.CoinCount);
+                    // 저장된 코인 수만큼 다시 추가
+                    inv.AddCoins(GameManager.I.SavedCoins);
+                }
+            }
             else
                 Debug.LogWarning($"SpawnPoint[{spawnPointName}] 못 찾음. 위치 복원 스킵.");
         }

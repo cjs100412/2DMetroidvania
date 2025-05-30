@@ -125,9 +125,21 @@ public class PlayerHealth : MonoBehaviour
 
         // 2) 잠깐 대기(파티클, 연출 여지)
         yield return new WaitForSeconds(0.2f);
-        
+
+        if (!string.IsNullOrEmpty(SceneLoader.LastCheckpointZone))
+        {
+            SceneLoader.NextZone = SceneLoader.LastCheckpointZone;
+            SceneLoader.NextSpawnPoint = SceneLoader.LastCheckpointSpawn;
+        }
+        else
+        {
+            // 체크포인트가 없으면 기본 리스폰
+            SceneLoader.NextZone = "StartScene";
+            SceneLoader.NextSpawnPoint = "StartSpawn";
+        }
+
+        SceneManager.LoadScene("Bootstrap", LoadSceneMode.Single);
         // 3) 씬 & 상태 복원
-        GameManager.I.LoadGame();
         //SceneManager.LoadScene("Bootstrap", LoadSceneMode.Single);
         // 여기서 GameManager가 비동기로 씬을 불러오고
         // 로드 완료 후 데이터를 복원합니다.

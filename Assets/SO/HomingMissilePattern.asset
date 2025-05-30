@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a21bd803363c8346b442a3833d1f897, type: 3}
+  m_Name: HomingMissilePattern
+  m_EditorClassIdentifier: 
+  missilePrefab: {fileID: 8163343930501831133, guid: 731dd5f7ed544c2419edd2b5b9ed404b, type: 3}
+  missileSpeed: 8
+  turnSpeed: 200
+  missileCount: 5
+  spawnInterval: 0.2
+  minDistance: 10
+  maxDistance: 50
+  cooldown: 3

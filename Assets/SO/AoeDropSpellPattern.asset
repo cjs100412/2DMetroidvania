@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 028ca6e3e10236d498ebe26b11ecd2eb, type: 3}
+  m_Name: AoeDropSpellPattern
+  m_EditorClassIdentifier: 
+  spellPrefab: {fileID: 5053225352103904879, guid: cc43e859dcd6054439248c52f67f532b, type: 3}
+  dropHeight: 10
+  dropTime: 1
+  explodeRadius: 3
+  damage: 5
+  minDistance: 0
+  maxDistance: 40
+  cooldown: 4
+  explodeEffect: {fileID: 725748389856807712, guid: 4bda94453d2ca7444a0fff05b2d425f5, type: 3}

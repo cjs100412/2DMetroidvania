@@ -6,4 +6,7 @@ public static class SceneLoader
     public static string NextZone;
     // 다음 Zone에서 플레이어를 스폰할 위치(SpawnPoint 오브젝트) 이름
     public static string NextSpawnPoint;
+
+    public static string LastCheckpointZone;
+    public static string LastCheckpointSpawn;
 }

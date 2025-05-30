@@ -230,7 +230,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c1a61b5825a09440942cb099f9fb33b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHp: 100
+  maxHp: 30
   maxMp: 5
   invincibleDuration: 1
   deathFlashCount: 5

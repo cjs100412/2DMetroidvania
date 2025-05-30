@@ -40,8 +40,7 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
     public LayerMask playerLayer;
 
     private PlayerHealth playerHealth;
-
-    private bool isAttacking;     // 공격 중 플래그
+    private PlayerInventory playerInventory;
 
     public bool IsBusy => bossController != null && bossController.isBusy;
     public bool IsDead => isDead;
@@ -51,7 +50,7 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
 
     private void Awake()
     {
-
+        playerInventory = player.GetComponent<PlayerInventory>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
         bossController = GetComponent<BossController>();
@@ -153,6 +152,7 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
         isDead = true;
         if (dieEffect != null)
             Instantiate(dieEffect, transform.position, Quaternion.identity);
+        playerInventory.AddCoins(50);
 
         // 카메라 줌 및 슬로우 모션 시작
         StartCoroutine(DoCameraZoom());

@@ -20,6 +20,21 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/DoubleJumpBossScene.unity
     guid: 59e3ef28c3584cc4482129ae4db1064c
+  - enabled: 1
+    path: Assets/Scenes/ZoneAScene.unity
+    guid: 90580c057b7117b4dacbf72141ea2196
+  - enabled: 1
+    path: Assets/Scenes/ZoneBScene.unity
+    guid: e3edf8f860576da47ad35a5115fe4410
+  - enabled: 1
+    path: Assets/Scenes/ShopScene.unity
+    guid: 27c7f48e9a76c94429384b2008e2cecc
+  - enabled: 1
+    path: Assets/Scenes/GrappleBossScene.unity
+    guid: 1d6d1270932717440a4bba0998b91fa3
+  - enabled: 1
+    path: Assets/Scenes/BossScene.unity
+    guid: 26c5d302d5ecb804895ff72ec318be3e
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

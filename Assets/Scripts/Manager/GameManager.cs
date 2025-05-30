@@ -20,6 +20,8 @@ public class GameManager : MonoBehaviour
     string savePath;
     PlayerData data;
 
+    public int SavedCoins => data.coins;
+
     void Awake()
     {
         if (I != null) { Destroy(gameObject); return; }

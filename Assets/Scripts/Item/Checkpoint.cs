@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 public class Checkpoint : MonoBehaviour
 {
     [Tooltip("이 체크포인트가 가진 스폰포인트 이름")]
-    public string spawnPointName = "StartSpawn";
+    public string spawnPointName = "FirstCheckPoint";
 
     void Reset()
     {
@@ -23,6 +23,10 @@ public class Checkpoint : MonoBehaviour
         string zone = SceneManager.GetActiveScene().name;
         SceneLoader.NextZone = zone;
         SceneLoader.NextSpawnPoint = spawnPointName;
+
+        SceneLoader.LastCheckpointZone = zone;
+        SceneLoader.LastCheckpointSpawn = spawnPointName;
+
 
         // 2) 기존 SaveGame 로직도 호출
         var health = other.GetComponent<PlayerHealth>();

@@ -41,6 +41,7 @@ public class DoubleJumpBoss : MonoBehaviour, IBossDeath
     public float attackRadius = 6f;
     public LayerMask playerLayer;
 
+    private PlayerInventory playerInventory;
     private PlayerHealth playerHealth;
 
     private float lastAttackTime; // 마지막 공격 시각 저장
@@ -51,7 +52,7 @@ public class DoubleJumpBoss : MonoBehaviour, IBossDeath
 
     private void Awake()
     {
-
+        playerInventory = player.GetComponent<PlayerInventory>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
         bossController = GetComponent<BossController>();
@@ -117,10 +118,17 @@ public class DoubleJumpBoss : MonoBehaviour, IBossDeath
         float distSq = diff.sqrMagnitude;
         Vector2 toPlayer = diff.normalized;
 
-        // 그 방향으로 속도 설정
-
-        toPlayer.y = 0; // y축은 이동하지 않는다
-        rb.linearVelocity = toPlayer * moveSpeed;
+        // 수직 속도는 중력에 맡기고, 수평 속도만 설정
+        Vector2 vel = rb.linearVelocity;           // 현재 속도(특히 Y)를 보존
+        if (distSq <= 40f)
+        {
+            vel.x = toPlayer.x * moveSpeed;       // X축만 플레이어 쪽으로 이동
+        }
+        else
+        {
+            vel.x = 0f;                      // 범위 벗어나면 수평 정지
+        }
+        rb.linearVelocity = vel;
 
         if (distSq <= attackRange * attackRange)
         {
@@ -188,6 +196,7 @@ public class DoubleJumpBoss : MonoBehaviour, IBossDeath
         if (dieEffect != null)
             Instantiate(dieEffect, transform.position, Quaternion.identity);
 
+        playerInventory.AddCoins(50);
         // 카메라 줌 및 슬로우 모션 시작
         StartCoroutine(DoCameraZoom());
         StartCoroutine(DoSlowMotion());

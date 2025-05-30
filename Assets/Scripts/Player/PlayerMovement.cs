@@ -285,6 +285,7 @@ public class PlayerMovement : MonoBehaviour
                 hit.GetComponent<DashBoss>()?.Damaged(damage);
                 hit.GetComponent<DoubleJumpBoss>()?.Damaged(damage);
                 hit.GetComponent<GrappleBoss>()?.Damaged(damage);
+                hit.GetComponent<LastBoss>()?.Damaged(damage);
             }
             animator.SetTrigger("isAttack");
         }

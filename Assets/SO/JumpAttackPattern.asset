@@ -15,12 +15,13 @@ MonoBehaviour:
   minDistance: 15
   maxDistance: 40
   cooldown: 5
-  jumpForce: 20
+  jumpForce: 30
   horizontalSpeed: 20
+  gravityMultiplier: 3
   damageRadius: 10
-  damage: 20
+  damage: 50
   groundCheckOffset: {x: 0, y: -3}
-  groundCheckRadius: 0.2
+  groundCheckRadius: 0.5
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
