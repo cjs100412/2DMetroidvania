@@ -157,7 +157,7 @@ Rigidbody2D:
     m_Bits: 0
   m_Interpolate: 0
   m_SleepingMode: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!114 &6546626090309931233
 MonoBehaviour:
@@ -191,6 +191,7 @@ MonoBehaviour:
   moveSpeed: 10
   jumpForce: 10
   maxJumpCount: 1
+  AttackEffect: {fileID: 8525990746615576120, guid: b85d21f3b8fed714bacf0c4fd50fa512, type: 3}
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -209,6 +210,9 @@ MonoBehaviour:
   rangedProjectilePrefab: {fileID: 8163343930501831133, guid: 8ae3623732ea78b48983d830daca2798, type: 3}
   rangedProjectileSpeed: 15
   rangedAttackCooldown: 1
+  playerKnockbackForce: 5
+  enemyKnockbackForce: 10
+  playerKnockbackDuration: 0.2
   jumpCount: 0
   isGrounded: 0
   isKnockback: 0
@@ -279,7 +283,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.0355186, y: 1.9881591}
+  m_Size: {x: 0.95, y: 1.9881591}
   m_EdgeRadius: 0.05
 --- !u!114 &5814977016451840323
 MonoBehaviour:

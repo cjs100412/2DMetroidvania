@@ -13,6 +13,11 @@ public class Enemy : MonoBehaviour
     // 적이 플레이어에게 입히는 데미지
     public int damage = 1;
 
+    [Header("넉백 세기")]
+    public float knockbackForce = 8f;
+    [Tooltip("넉백 상태 지속 시간")]
+    public float knockbackDuration = 0.2f;
+
     [Header("Patrol Settings")]
     // 순찰(평상시 이동) 속도
     public float patrolSpeed = 2f;
@@ -64,7 +69,7 @@ public class Enemy : MonoBehaviour
     // 내부 상태 변수
     private float lastAttackTime; // 마지막 공격 시각 저장
     private bool isAttacking;     // 공격 중 플래그
-
+    private bool isKnockback = false;
     void Awake()
     {
         var player = GameObject.FindWithTag("Player");
@@ -91,6 +96,8 @@ public class Enemy : MonoBehaviour
 
     void Update()
     {
+        if (isKnockback)
+            return;
         // 체력이 0 이하거나 공격 중이라면 상태 전환 로직을 건너뛰고 방향 처리만 수행
         if (hp <= 0 || isAttacking)
         {
@@ -115,6 +122,8 @@ public class Enemy : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (isKnockback)
+            return;
         // 체력이 0 이거나 공격 중이면 이동 로직을 멈춤
         if (hp <= 0 || isAttacking)
             return;
@@ -228,10 +237,24 @@ public class Enemy : MonoBehaviour
         hp -= amount;
         StartCoroutine(RedFlash());
 
+        if (playerTransform != null && rb != null)
+        {
+            Vector2 dir = ((Vector2)transform.position - (Vector2)playerTransform.position).normalized;
+            rb.AddForce(dir * knockbackForce, ForceMode2D.Impulse);
+
+            // 넉백 상태 진입
+            isKnockback = true;
+            StartCoroutine(ResetEnemyKnockback());
+        }
+
         if (hp <= 0)
             Die();
     }
-
+    private IEnumerator ResetEnemyKnockback()
+    {
+        yield return new WaitForSeconds(knockbackDuration);
+        isKnockback = false;
+    }
     // 피격 시 깜박임 효과 코루틴
     private IEnumerator RedFlash()
     {

@@ -4,6 +4,12 @@ using UnityEngine;
 
 public class DashBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
 {
+
+    [Header("===== 보스 ID 및 벽 ID (GameManager용) =====")]
+    public string bossID = "DashBoss";
+
+    public string wallID = "DashBoss_Wall";
+
     public ParticleSystem dieEffect;
     private SpriteRenderer spriteRenderer;
     CinemachineCamera cinemachineCamera;
@@ -48,6 +54,14 @@ public class DashBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
 
     private void Awake()
     {
+        if (GameManager.I != null && GameManager.I.IsBossDefeated(bossID))
+        {
+            if (wall != null)
+                Destroy(wall);
+            Destroy(this.gameObject);
+            return;
+        }
+
         playerInventory = player.GetComponent<PlayerInventory>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
@@ -161,7 +175,17 @@ public class DashBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
 
     private void Die()
     {
+        if (isDead) return;
         isDead = true;
+        if (GameManager.I != null)
+        {
+            GameManager.I.SetBossDefeated(bossID);
+            GameManager.I.SetWallDestroyed(wallID);
+        }
+        else
+        {
+            Debug.LogWarning($"[{name}] Die(): GameManager 인스턴스가 null입니다. 보스/벽 상태가 저장되지 않습니다.");
+        }
         if (dieEffect != null)
             Instantiate(dieEffect, transform.position, Quaternion.identity);
         playerInventory.AddCoins(50);

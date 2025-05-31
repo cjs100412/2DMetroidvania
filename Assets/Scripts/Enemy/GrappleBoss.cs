@@ -14,6 +14,11 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
     private BossController bossController;
     private GameObject player;
 
+    [Header("===== 보스 ID 및 벽 ID (GameManager용) =====")]
+    public string bossID = "GrappleBoss";
+
+    public string wallID = "GrappleBoss_Wall";
+
     [Header("카메라 줌인")]
     public float zoomFactor = 0.6f;
     public float zoomDuration = 2f;
@@ -50,6 +55,13 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
 
     private void Awake()
     {
+        if (GameManager.I != null && GameManager.I.IsBossDefeated(bossID))
+        {
+            if (wall != null) Destroy(wall);
+            Destroy(this.gameObject);
+            return;
+        }
+
         playerInventory = player.GetComponent<PlayerInventory>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
@@ -149,7 +161,19 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
 
     private void Die()
     {
+        if (isDead) return;
         isDead = true;
+
+        if (GameManager.I != null)
+        {
+            GameManager.I.SetBossDefeated(bossID);
+            GameManager.I.SetWallDestroyed(wallID);
+        }
+        else
+        {
+            Debug.LogWarning($"[{name}] Die(): GameManager가 null이라 보스/벽 상태가 저장되지 않습니다.");
+        }
+
         if (dieEffect != null)
             Instantiate(dieEffect, transform.position, Quaternion.identity);
         playerInventory.AddCoins(50);

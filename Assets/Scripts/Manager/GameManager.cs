@@ -2,7 +2,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
-using static UnityEditor.PlayerSettings;
+using System.Collections.Generic;
 
 [System.Serializable]
 public class PlayerData
@@ -12,6 +12,12 @@ public class PlayerData
     public int hp;
     public int mp;
     public int coins;
+
+    // ① 보스 처치 여부를 저장할 문자열 리스트
+    public List<string> defeatedBosses = new List<string>();
+
+    // ② 벽 파괴 여부를 저장할 문자열 리스트
+    public List<string> destroyedWalls = new List<string>();
 }
 
 public class GameManager : MonoBehaviour
@@ -27,12 +33,35 @@ public class GameManager : MonoBehaviour
         if (I != null) { Destroy(gameObject); return; }
         I = this;
         DontDestroyOnLoad(gameObject);
+
         savePath = Path.Combine(Application.persistentDataPath, "save.json");
         data = new PlayerData();
+
+        //에디터에선 테스트용으로 삭제하지않는다
+#if UNITY_EDITOR
         if (File.Exists(savePath))
             File.Delete(savePath);
-        InitializeDefaultSave();
+#endif
+
+        if (File.Exists(savePath))
+        {
+            // 기존 파일이 있으면 _삭제하지 않고_ 로드만 한다
+            string json = File.ReadAllText(savePath);
+            data = JsonUtility.FromJson<PlayerData>(json);
+
+            // 데이터 중 리스트가 null로 내려올 경우 대비
+            if (data.defeatedBosses == null) data.defeatedBosses = new List<string>();
+            if (data.destroyedWalls == null) data.destroyedWalls = new List<string>();
+
+        }
+        else
+        {
+            // 세이브 파일이 없을 때만 초기값 세팅
+            InitializeDefaultSave();
+        }
+
     }
+
     void InitializeDefaultSave()
     {
         // 현재 씬과 플레이어의 시작 위치, 최대 체력 등 원하는 기본값 세팅
@@ -121,5 +150,52 @@ public class GameManager : MonoBehaviour
         }
 
         yield return null;
+    }
+    /// <summary>
+    /// 보스가 이미 처치되었는지를 확인
+    /// </summary>
+    /// <param name="bossID">예: "Level1_BossA"</param>
+    /// <returns>처치되었으면 true, 아니면 false</returns>
+    public bool IsBossDefeated(string bossID)
+    {
+        return data.defeatedBosses.Contains(bossID);
+    }
+
+    /// <summary>
+    /// 보스를 처치했음을 기록하고 저장까지 수행
+    /// </summary>
+    public void SetBossDefeated(string bossID)
+    {
+        if (!data.defeatedBosses.Contains(bossID))
+        {
+            data.defeatedBosses.Add(bossID);
+            // 변화된 상태를 파일에 바로 저장
+            string json = JsonUtility.ToJson(data, true);
+            File.WriteAllText(savePath, json);
+            Debug.Log($"[GameManager] Boss defeated recorded: {bossID}");
+        }
+    }
+
+    /// <summary>
+    /// 벽이 이미 파괴되었는지를 확인
+    /// </summary>
+    public bool IsWallDestroyed(string wallID)
+    {
+        return data.destroyedWalls.Contains(wallID);
+    }
+
+    /// <summary>
+    /// 벽 파괴를 기록하고 저장까지 수행
+    /// </summary>
+    public void SetWallDestroyed(string wallID)
+    {
+        if (!data.destroyedWalls.Contains(wallID))
+        {
+            data.destroyedWalls.Add(wallID);
+            // 변화된 상태를 파일에 바로 저장
+            string json = JsonUtility.ToJson(data, true);
+            File.WriteAllText(savePath, json);
+            Debug.Log($"[GameManager] Wall destroyed recorded: {wallID}");
+        }
     }
 }

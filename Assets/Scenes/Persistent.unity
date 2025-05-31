@@ -2665,6 +2665,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 2398781727374648191, guid: dca95851477deb14794c63c72f5191da, type: 3}
+      propertyPath: m_Size.x
+      value: 0.95
+      objectReference: {fileID: 0}
     - target: {fileID: 5814977016451840323, guid: dca95851477deb14794c63c72f5191da, type: 3}
       propertyPath: launchForce
       value: 25
@@ -2677,10 +2681,26 @@ PrefabInstance:
       propertyPath: maxHp
       value: 100
       objectReference: {fileID: 0}
+    - target: {fileID: 8073386854672078308, guid: dca95851477deb14794c63c72f5191da, type: 3}
+      propertyPath: m_GravityScale
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8073386854672078308, guid: dca95851477deb14794c63c72f5191da, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9036405933866672044, guid: dca95851477deb14794c63c72f5191da, type: 3}
       propertyPath: playerUI
       value: 
       objectReference: {fileID: 903084261}
+    - target: {fileID: 9036405933866672044, guid: dca95851477deb14794c63c72f5191da, type: 3}
+      propertyPath: enemyKnockbackForce
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 9036405933866672044, guid: dca95851477deb14794c63c72f5191da, type: 3}
+      propertyPath: playerKnockbackForce
+      value: 3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2707,7 +2727,7 @@ SceneRoots:
   - {fileID: 634690194}
   - {fileID: 4587552777822224186}
   - {fileID: 1454381034}
-  - {fileID: 582519572}
   - {fileID: 5669761274528219517}
   - {fileID: 903084265}
+  - {fileID: 582519572}
   - {fileID: 1000538560}

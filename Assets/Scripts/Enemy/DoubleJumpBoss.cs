@@ -1,14 +1,21 @@
-using System;
 using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
 
+// IBossDeath 인터페이스(생략) 가정
 public class DoubleJumpBoss : MonoBehaviour, IBossDeath
 {
-    public ParticleSystem dieEffect;
+    [Header("===== 보스 ID 및 벽 ID (GameManager용) =====")]
+    public string bossID = "DoubleJumpBoss";                               
+
+    public string wallID = "DoubleJumpBoss_Wall";
+
+    [Header("사망 이펙트 (Particle Prefab)")]
+    public ParticleSystem dieEffect;     // Inspector에서 할당해야 함
+
     private SpriteRenderer spriteRenderer;
-    CinemachineCamera cinemachineCamera;
-    public GameObject wall;
+    private CinemachineCamera cinemachineCamera;
+    public GameObject wall;              // 사망 시 삭제할 벽 오브젝트 (Inspector)
 
     private Rigidbody2D rb;
     private BossController bossController;
@@ -28,108 +35,173 @@ public class DoubleJumpBoss : MonoBehaviour, IBossDeath
     public int maxHp = 100;
     private int hp;
     public int damage = 2;
-
     public bool isDead = false;
 
     [Header("움직임")]
-    public float moveSpeed = 3f;  // 이동 속도
+    public float moveSpeed = 3f;               // 이동 속도
 
     [Header("공격 셋팅")]
     public float attackRange = 5f;
     public float attackCooldown = 2f;
-    public Transform attackPoint;
+    public Transform attackPoint;              // Inspector에서 드래그할 것
     public float attackRadius = 6f;
     public LayerMask playerLayer;
 
     private PlayerInventory playerInventory;
     private PlayerHealth playerHealth;
 
-    private float lastAttackTime; // 마지막 공격 시각 저장
-    private bool isAttacking;     // 공격 중 플래그
+    private float lastAttackTime;
+    private bool isAttacking;
 
     public bool IsBusy => bossController != null && bossController.isBusy;
     public bool IsDead => isDead;
 
+
     private void Awake()
     {
-        playerInventory = player.GetComponent<PlayerInventory>();
+        if (GameManager.I != null && GameManager.I.IsBossDefeated(bossID))
+        {
+            // 벽 오브젝트도 함께 제거
+            if (wall != null)
+            {
+                Destroy(wall);
+            }
+            // 보스 자신 제거
+            Destroy(this.gameObject);
+            return;
+        }
+
+        // 1) Player 태그로 오브젝트 찾기
+        var pgo = GameObject.FindWithTag("Player");
+        if (pgo != null)
+        {
+            player = pgo;
+
+            // PlayerInventory, PlayerHealth 컴포넌트 가져오기
+            playerInventory = player.GetComponent<PlayerInventory>();
+            if (playerInventory == null)
+                Debug.LogError($"[{name}] Player 오브젝트에 PlayerInventory 컴포넌트가 없습니다!");
+
+            playerHealth = player.GetComponent<PlayerHealth>();
+            if (playerHealth == null)
+                Debug.LogError($"[{name}] Player 오브젝트에 PlayerHealth 컴포넌트가 없습니다!");
+        }
+        else
+        {
+            Debug.LogError($"[{name}] Awake(): \"Player\" 태그를 가진 오브젝트를 찾을 수 없습니다.");
+        }
+
+        // 2) 스프라이트 렌더러, 리지드바디, BossController 가져오기
         spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null)
+            Debug.LogError($"[{name}] SpriteRenderer 컴포넌트가 이 오브젝트에 없습니다!");
+
         rb = GetComponent<Rigidbody2D>();
+        if (rb == null)
+            Debug.LogError($"[{name}] Rigidbody2D 컴포넌트가 이 오브젝트에 없습니다!");
+
         bossController = GetComponent<BossController>();
-        cinemachineCamera = GameObject.FindWithTag("Cinemachine").GetComponent<CinemachineCamera>();
+        if (bossController == null)
+            Debug.LogError($"[{name}] BossController 컴포넌트가 이 오브젝트에 없습니다!");
+
+        // 3) Cinemachine 카메라 가져오기 (Tag="Cinemachine"인 오브젝트 + CinemachineCamera 컴포넌트)
+        var camObj = GameObject.FindWithTag("Cinemachine");
+        if (camObj != null)
+        {
+            cinemachineCamera = camObj.GetComponent<CinemachineCamera>();
+            if (cinemachineCamera == null)
+                Debug.LogError($"[{name}] \"Cinemachine\" 태그 오브젝트에는 CinemachineCamera 컴포넌트가 없습니다!");
+            else
+                originalOrthoSize = cinemachineCamera.Lens.OrthographicSize;
+        }
+        else
+        {
+            Debug.LogError($"[{name}] Awake(): \"Cinemachine\" 태그를 가진 오브젝트를 찾을 수 없습니다.");
+        }
+
+        // 4) 초기에 체력 세팅
         hp = maxHp;
 
-        var pgo = GameObject.FindWithTag("Player");
-        if (pgo != null) player = pgo;
-        else Debug.LogError("Player 태그 오브젝트가 없습니다.");
-
-        if (cinemachineCamera != null)
-            originalOrthoSize = cinemachineCamera.Lens.OrthographicSize;
-        else
-            Debug.LogError("Cinemachine Camera가 할당되지 않았습니다.");
-
-        playerHealth = player.GetComponent<PlayerHealth>();
-
+        // 5) attackPoint가 할당되었는지 확인
+        if (attackPoint == null)
+            Debug.LogError($"[{name}] Inspector에 attackPoint(Transform)가 할당되지 않았습니다!");
     }
+
 
     private void Update()
     {
-        // 체력이 0 이하거나 공격 중이라면 상태 전환 로직을 건너뛰고 방향 처리만 수행
+        // 체력이 0 이하이거나 공격 중이면 이동/공격 로직 건너뛰기. 대신 바라보는 방향만 처리
         if (hp <= 0 || isAttacking)
         {
             HandleFacing();
             return;
         }
 
-        // 플레이어가 사망했으면 아무 동작도 하지 않음
+        // PlayerHealth가 null이면 예외를 막기 위해 바로 리턴
+        if (playerHealth == null)
+            return;
+
+        // 플레이어 사망 시 아무 동작 안 함
         if (playerHealth.isDead)
             return;
 
         HandleFacing();
     }
 
+
     private void HandleFacing()
     {
-        SetScaleX(player.transform.position.x > transform.position.x ? 6f : -6f);
-
+        // player가 null인지 다시 한 번 체크
+        if (player != null)
+        {
+            float scaleX = (player.transform.position.x > transform.position.x) ? 6f : -6f;
+            SetScaleX(scaleX);
+        }
     }
 
     private void SetScaleX(float x)
     {
-        Vector3 s = transform.localScale;
+        var s = transform.localScale;
         s.x = x;
         transform.localScale = s;
     }
 
-    void FixedUpdate()
+
+    private void FixedUpdate()
     {
-        // 죽으면 이동 정지
+        // 죽었으면 이동을 무조건 멈추고 리턴
         if (isDead)
         {
             rb.linearVelocity = Vector2.zero;
             return;
         }
 
+        // bossController가 바쁘면 리턴
         if (IsBusy)
             return;
 
-        // 플레이어와 거리 계산
+        // player가 null이면 리턴
+        if (player == null)
+            return;
+
+        // 플레이어와의 거리 계산
         Vector2 diff = (Vector2)player.transform.position - (Vector2)transform.position;
         float distSq = diff.sqrMagnitude;
         Vector2 toPlayer = diff.normalized;
 
-        // 수직 속도는 중력에 맡기고, 수평 속도만 설정
-        Vector2 vel = rb.linearVelocity;           // 현재 속도(특히 Y)를 보존
+        // 기존 Y축 속도 보존하면서, 범위 내에서만 X축으로 이동
+        Vector2 vel = rb.linearVelocity;
         if (distSq <= 40f)
         {
-            vel.x = toPlayer.x * moveSpeed;       // X축만 플레이어 쪽으로 이동
+            vel.x = toPlayer.x * moveSpeed;
         }
         else
         {
-            vel.x = 0f;                      // 범위 벗어나면 수평 정지
+            vel.x = 0f;
         }
         rb.linearVelocity = vel;
 
+        // 공격 범위 내이면 TryAttack()
         if (distSq <= attackRange * attackRange)
         {
             TryAttack();
@@ -137,7 +209,6 @@ public class DoubleJumpBoss : MonoBehaviour, IBossDeath
     }
 
 
-    // 공격 시도: 쿨타임이 지나야 실행
     private void TryAttack()
     {
         if (isAttacking)
@@ -150,65 +221,135 @@ public class DoubleJumpBoss : MonoBehaviour, IBossDeath
         StartCoroutine(PerformAttack());
     }
 
-    // 실제 공격 처리 코루틴
+
     private IEnumerator PerformAttack()
     {
-        Debug.Log("DoubleJumpBoss TryAttack");
-        isAttacking = true;
+        Debug.Log($"[{name}] DoubleJumpBoss TryAttack");
 
-        // 공격 중에는 수평 이동 멈춤, 수직 속도 유지
+        isAttacking = true;
+        // 공격 중에는 이동 X
         rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
 
-        // 타격 타이밍까지 대기 (0.2초)
+        // 타격 타이밍까지 대기
         yield return new WaitForSeconds(0.2f);
 
-        // OverlapCircleAll로 데미지 판정
-        Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRadius, playerLayer);
-        foreach (var hit in hits)
-            hit.GetComponent<PlayerHealth>()?.Damaged(damage);
+        // 공격 판정: OverlapCircleAll
+        if (attackPoint != null)
+        {
+            Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRadius, playerLayer);
+            foreach (var hit in hits)
+            {
+                var ph = hit.GetComponent<PlayerHealth>();
+                if (ph != null)
+                    ph.Damaged(damage);
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"[{name}] PerformAttack: attackPoint가 null이어서 충돌 판정을 하지 못합니다.");
+        }
 
-        // 공격 종료 후 상태 복귀
+        // 공격 종료
         isAttacking = false;
     }
 
-    // 피해 입었을 때 호출
+
+    // 외부에서 피해량(amount)을 주었을 때 호출
     public void Damaged(int amount)
     {
-        if (isDead) return;
+        if (isDead)
+            return;
+
         hp -= amount;
-        StartCoroutine(RedFlash());
+
+        // RedFlash 코루틴 실행. spriteRenderer가 null이면 예외 방지.
+        if (spriteRenderer != null)
+        {
+            StartCoroutine(RedFlash());
+        }
+        else
+        {
+            Debug.LogWarning($"[{name}] Damaged: spriteRenderer가 null이라 RedFlash를 실행하지 않습니다.");
+        }
 
         if (hp <= 0)
             Die();
     }
 
+
     private IEnumerator RedFlash()
     {
+        if (spriteRenderer == null)
+            yield break;
+
         Color original = spriteRenderer.color;
         spriteRenderer.color = Color.red;
+
         yield return new WaitForSeconds(0.2f);
-        spriteRenderer.color = original;
+
+        if (spriteRenderer != null)
+            spriteRenderer.color = original;
     }
+
 
     private void Die()
     {
-        isDead = true;
-        if (dieEffect != null)
-            Instantiate(dieEffect, transform.position, Quaternion.identity);
+        if (isDead)
+            return;
 
-        playerInventory.AddCoins(50);
-        // 카메라 줌 및 슬로우 모션 시작
-        StartCoroutine(DoCameraZoom());
+        isDead = true;
+
+        if (GameManager.I != null)
+        {
+            GameManager.I.SetBossDefeated(bossID);
+            GameManager.I.SetWallDestroyed(wallID);
+        }
+        else
+        {
+            Debug.LogWarning($"[{name}] Die(): GameManager 인스턴스를 찾을 수 없습니다. 보스/벽 상태가 저장되지 않습니다.");
+        }
+
+        // 사망 이펙트
+        if (dieEffect != null)
+        {
+            Instantiate(dieEffect, transform.position, Quaternion.identity);
+        }
+        else
+        {
+            Debug.LogWarning($"[{name}] Die(): dieEffect(Prefab)가 Inspector에 할당되지 않았습니다.");
+        }
+
+        // 플레이어에게 보상(코인) 지급
+        if (playerInventory != null)
+            playerInventory.AddCoins(50);
+        else
+            Debug.LogWarning($"[{name}] Die(): playerInventory가 null이라 코인 지급을 하지 못했습니다.");
+
+        // 카메라 줌인 + 슬로우 모션
+        if (cinemachineCamera != null)
+            StartCoroutine(DoCameraZoom());
+        else
+            Debug.LogWarning($"[{name}] Die(): cinemachineCamera가 null이라 카메라 효과를 실행하지 못했습니다.");
+
         StartCoroutine(DoSlowMotion());
 
-        // 모든 효과가 끝난 후 아이템 제거
+        // wall이 null이 아니면 파괴
+        if (wall != null)
+        {
+            Destroy(wall);
+        }
+        else
+        {
+            Debug.LogWarning($"[{name}] Die(): wall(GameObject)가 Inspector에 할당되지 않았습니다.");
+        }
+
+        // 일정 시간 뒤 몹 오브젝트 파괴
         float totalDuration = zoomDuration * 2 + slowDuration + 0.1f;
         Destroy(gameObject, totalDuration);
-        Destroy(wall);
     }
 
 
-    IEnumerator DoCameraZoom()
+    private IEnumerator DoCameraZoom()
     {
         if (cinemachineCamera == null)
             yield break;
@@ -242,26 +383,22 @@ public class DoubleJumpBoss : MonoBehaviour, IBossDeath
     }
 
 
-    IEnumerator DoSlowMotion()
+    private IEnumerator DoSlowMotion()
     {
-        // 슬로우 모션 시작
         Time.timeScale = slowTimeScale;
         Time.fixedDeltaTime = 0.02f * slowTimeScale;
 
-        // 실제 시간으로 기다림
         yield return new WaitForSecondsRealtime(slowDuration);
 
-        // 시간 복구
         Time.timeScale = 1f;
         Time.fixedDeltaTime = 0.02f;
     }
 
-    void OnDrawGizmosSelected()
+
+    private void OnDrawGizmosSelected()
     {
-        // 공격 범위 시각화 (빨간색)
         Gizmos.color = Color.red;
         if (attackPoint != null)
             Gizmos.DrawWireSphere(attackPoint.position, attackRadius);
-
     }
 }

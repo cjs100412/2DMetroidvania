@@ -12,6 +12,9 @@ public class PlayerMovement : MonoBehaviour
     [Header("허용 점프 횟수")]
     public int maxJumpCount = 1;
 
+    [Header("공격 이펙트")]
+    public GameObject AttackEffect;
+
     [Header("바닥 검사 레이어")]
     public LayerMask groundLayer;
 
@@ -41,6 +44,14 @@ public class PlayerMovement : MonoBehaviour
     public float rangedProjectileSpeed = 15f;
     [Tooltip("투사체 발사 쿨타임")]
     public float rangedAttackCooldown = 1f;
+
+    [Header("넉백 세기")]
+    [Tooltip("플레이어가 맞을 때 받는 넉백 세기")]
+    public float playerKnockbackForce = 5f;
+    [Tooltip("적이 받을 넉백 세기")]
+    public float enemyKnockbackForce = 10f;
+    [Tooltip("플레이어가 넉백당해 멈춰 있는 시간(초)")]
+    public float playerKnockbackDuration = 0.2f;
 
 
     private bool horizontalLocked = false;
@@ -80,7 +91,6 @@ public class PlayerMovement : MonoBehaviour
     {
         if (gameObject.GetComponent<PlayerHealth>().isDead == true) return;
 
-        
 
         // 수평 입력 읽기
         hInput = Input.GetAxisRaw("Horizontal");
@@ -92,31 +102,29 @@ public class PlayerMovement : MonoBehaviour
             StartCoroutine(PerformDash());
         }
 
-        if (isDashing)
+        if (isDashing || isKnockback)
             return;
 
         animator.SetBool("isGround", isGrounded);
 
-        // 점프 입력 처리
         if (Input.GetKeyDown(KeyCode.Space) && jumpCount < maxJumpCount)
         {
-            if (Input.GetKey(KeyCode.DownArrow))
-            {
-                StartCoroutine(DropThroughPlatform());
-            }
-            else
-            {
-                // y축 속도만 재설정해서 일정한 높이로 점프
-                animator.SetTrigger("isJumping");
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-                jumpCount++;
-                isGrounded = false;  // 즉시 비접지 상태로 마킹
-
-                UnlockHorizontal();
-            }
-
-            
+            animator.SetTrigger("isJumping");
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+            jumpCount++;
+            isGrounded = false;
+            UnlockHorizontal();
         }
+
+        if (Input.GetKeyUp(KeyCode.Space))
+        {
+            // 점프 중(위로 상승 중)일 때만 적용
+            if (rb.linearVelocity.y > 0f)
+            {
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
+            }
+        }
+
         float vy = rb.linearVelocity.y;
         animator.SetFloat("VerticalVelocity", vy, 0.1f /*dampTime*/, Time.deltaTime);
 
@@ -158,19 +166,18 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isDashing)
             return;
-
+        if (isKnockback)
+            return;
         if (GetComponent<GrappleLauncher>().isAttached)
             return;
 
 
-        if (!isKnockback)
+        if (!horizontalLocked)
         {
-            if (!horizontalLocked)
-            {
-                // 수평 이동
-                rb.linearVelocity = new Vector2(hInput * moveSpeed, rb.linearVelocity.y);
-            }
+            // 수평 이동
+            rb.linearVelocity = new Vector2(hInput * moveSpeed, rb.linearVelocity.y);
         }
+        
         
 
         if (rb.IsSleeping())
@@ -195,35 +202,6 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-
-    private IEnumerator DropThroughPlatform()
-    {
-        // 플레이어 하단에 있는 플랫폼 콜라이더들 탐지
-        Vector2 origin = (Vector2)playerCollider.bounds.center - Vector2.up * (playerCollider.bounds.extents.y + 2.1f);
-        Vector2 size = playerCollider.bounds.size * 0.9f;
-        Collider2D[] hits = Physics2D.OverlapBoxAll(origin, size, 0f, platformLayer);
-
-        // 해당 플랫폼들과의 충돌 무시
-        foreach (var plat in hits)
-        {
-            Physics2D.IgnoreCollision(playerCollider, plat, true);
-            Debug.Log("플랫폼 충돌 무시 on");
-        }
-
-        // 소량 하강하여 완전히 빠져나오도록 유도
-        transform.position += Vector3.down * 0.2f;
-
-        // 무시 유지 시간 (게임 플레이에 맞게 조절)
-        yield return new WaitForSeconds(0.7f);
-
-        //충돌 복원
-        foreach (var plat in hits)
-        {
-            Physics2D.IgnoreCollision(playerCollider, plat, false);
-            Debug.Log("플랫폼 충돌 무시 off");
-        }
-        Debug.Log("하향점프");
-    }
 
     private IEnumerator PerformDash()
     {
@@ -254,41 +232,64 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    //// 비트리거 Collider2D + OnCollisionEnter/Exit로만 접지 판정
-    //void OnCollisionEnter2D(Collision2D col)
-    //{
-    //    if (((1 << col.gameObject.layer) & groundLayer) != 0)
-    //    {
-    //        isGrounded = true;
-    //        jumpCount = 0;  // 지면에 닿으면 점프 카운트 리셋
-    //    }
-    //}
-
-    //void OnCollisionExit2D(Collision2D col)
-    //{
-    //    if (((1 << col.gameObject.layer) & groundLayer) != 0)
-    //    {
-    //        isGrounded = false;
-    //    }
-    //}
-
     private void OnAttack()
     {
-        if (Time.time >= lastAttackTime + attackCooldown)
+        // 1) 쿨타임 검사
+        if (Time.time < lastAttackTime + attackCooldown)
+            return;
+
+        // 2) 공격 애니메이션 트리거 (애니메이터에 isAttack 트리거가 있어야 함)
+        animator.SetTrigger("isAttack");
+        Instantiate(AttackEffect,attackPoint.position,Quaternion.identity);
+
+        // 3) 최종적으로 마지막 공격 시간 갱신
+        lastAttackTime = Time.time;
+
+        // 4) OverlapCircleAll로 공격 범위 내의 모든 적을 가져옴
+        Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRadius, enemyLayer);
+
+        if (hits.Length == 0)
+            return;
+
+        // 5) 공격 성공: 각 히트 대상(Enemy들)에 데미지 & 넉백 적용
+        foreach (var hitCollider in hits)
         {
-            lastAttackTime = Time.time;
-            // 데미지 판정
-            Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRadius, enemyLayer);
-            foreach (var hit in hits)
+            // 5-1) 바라보는 방향을 계산: (적 위치 - 플레이어 위치).normalized
+            Vector2 directionToEnemy = ((Vector2)hitCollider.transform.position - (Vector2)transform.position).normalized;
+
+            // 5-2) 적에게 데미지 주기
+            //    (기존에는 hitCollider.GetComponent<Enemy>()?.Damaged(damage) 식으로만 하셨을 텐데,
+            //     지금은 Damaged 후에 넉백 로직을 별도로 직접 호출하거나, 
+            //     AddForce를 걸어 줍니다.)
+            hitCollider.GetComponent<Enemy>()?.Damaged(damage);
+            hitCollider.GetComponent<DashBoss>()?.Damaged(damage);
+            hitCollider.GetComponent<DoubleJumpBoss>()?.Damaged(damage);
+            hitCollider.GetComponent<GrappleBoss>()?.Damaged(damage);
+            hitCollider.GetComponent<LastBoss>()?.Damaged(damage);
+
+            // 5-3) 적에게 큰 넉백 주기
+            Rigidbody2D enemyRb = hitCollider.GetComponent<Rigidbody2D>();
+            if (enemyRb != null)
             {
-                hit.GetComponent<Enemy>()?.Damaged(damage);
-                hit.GetComponent<DashBoss>()?.Damaged(damage);
-                hit.GetComponent<DoubleJumpBoss>()?.Damaged(damage);
-                hit.GetComponent<GrappleBoss>()?.Damaged(damage);
-                hit.GetComponent<LastBoss>()?.Damaged(damage);
+                // Impulse 모드로 단번에 힘을 가해 준다
+                enemyRb.AddForce(directionToEnemy * enemyKnockbackForce, ForceMode2D.Impulse);
             }
-            animator.SetTrigger("isAttack");
+
+            // 5-4) 플레이어에게 작은 넉백 주기 (적 반대 방향으로)
+            //    → directionToEnemy 방향이 적쪽이므로, -directionToEnemy는 플레이어 쪽(반대)
+            if (rb != null)
+            {
+                rb.AddForce(-directionToEnemy * playerKnockbackForce, ForceMode2D.Impulse);
+                isKnockback = true;
+                StartCoroutine(ResetPlayerKnockback());
+            }
         }
+    }
+    private IEnumerator ResetPlayerKnockback()
+    {
+        // 잠시 대기하는 동안 FixedUpdate에서 이동이 skip된다.
+        yield return new WaitForSeconds(playerKnockbackDuration);
+        isKnockback = false;
     }
     private void OnRangedAttack()
     {
