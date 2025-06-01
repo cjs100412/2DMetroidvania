@@ -11,7 +11,7 @@ public class DoubleJumpBoss : MonoBehaviour, IBossDeath
     public string wallID = "DoubleJumpBoss_Wall";
 
     [Header("사망 이펙트 (Particle Prefab)")]
-    public ParticleSystem dieEffect;     // Inspector에서 할당해야 함
+    public GameObject dieEffect;     // Inspector에서 할당해야 함
 
     private SpriteRenderer spriteRenderer;
     private CinemachineCamera cinemachineCamera;

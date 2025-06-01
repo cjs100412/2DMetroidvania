@@ -3,27 +3,24 @@ using System;
 
 public class PlayerInventory : MonoBehaviour
 {
-    // 현재 소지 코인 수
     private int coinCount = 0;
     public int CoinCount { get { return coinCount; } set { coinCount = value; } }
 
-    // 코인 수 변경 시 외부에서 구독할 수 있는 이벤트
-    public event Action<int> OnCoinChanged;
-
-    /// <summary>
-    /// 코인 추가 (몬스터 처치, 아이템 줍기 등)
-    /// </summary>
+    public Action<int> OnCoinChanged;
+    // 코인 추가 (몬스터 처치, 아이템 줍기 등)
     public void AddCoins(int amount)
     {
         if (amount <= 0) return;
         coinCount += amount;
         Debug.Log($"Coins +{amount} → Total: {coinCount}");
         OnCoinChanged?.Invoke(coinCount);
+
+        // GameManager와 동기화
+        if (GameManager.I != null)
+            GameManager.I.SetCoins(coinCount);
     }
 
-    /// <summary>
-    /// 코인 소비 (상점 구매 등). 충분치 않으면 false 반환
-    /// </summary>
+    // 코인 소비 (상점 구매 등)
     public bool SpendCoins(int amount)
     {
         if (amount <= 0) return true;
@@ -35,6 +32,11 @@ public class PlayerInventory : MonoBehaviour
         coinCount -= amount;
         Debug.Log($"Coins -{amount} → Total: {coinCount}");
         OnCoinChanged?.Invoke(coinCount);
+
+        // GameManager와 동기화
+        if (GameManager.I != null)
+            GameManager.I.SetCoins(coinCount);
+
         return true;
     }
 }

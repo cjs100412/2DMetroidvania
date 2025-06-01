@@ -59,33 +59,44 @@ public class GameBootstrap : MonoBehaviour
             yield break;
         }
 
-        // Additive 로드
+        // 1) 대상 Zone을 Additive 모드로 로드
         yield return SceneManager.LoadSceneAsync(zoneName, LoadSceneMode.Additive);
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(zoneName));
 
-        // 플레이어 위치 이동
+        // 2) 플레이어 위치 이동
         var player = GameObject.FindWithTag("Player");
         if (player != null)
         {
             var spawn = GameObject.Find(spawnPointName);
             if (spawn != null)
             {
+                // 2-1) 위치 복원
                 player.transform.position = spawn.transform.position;
-                var ph = player.GetComponent<PlayerHealth>();
-                if (ph != null)
-                    ph.Respawn(spawn.transform.position, ph.maxHp, ph.maxMp);
+
+                var rb = player.GetComponent<Rigidbody2D>();
+                if (rb != null)
+                    rb.linearVelocity = Vector2.zero;
+
+                //var ph = player.GetComponent<PlayerHealth>();
+                //if (ph != null)
+                //    ph.Respawn(spawn.transform.position, ph.maxHp, ph.maxMp);
+
                 var inv = player.GetComponent<PlayerInventory>();
                 if (inv != null)
                 {
-                    // 기존 코인 전부 제거
-                    inv.SpendCoins(inv.CoinCount);
-                    // 저장된 코인 수만큼 다시 추가
+
+                    inv.CoinCount = 0;
+                    inv.OnCoinChanged?.Invoke(0);
+
+                    // 저장된 최신 코인 수만큼 다시 추가
                     inv.AddCoins(GameManager.I.SavedCoins);
                 }
             }
             else
+            {
                 Debug.LogWarning($"SpawnPoint[{spawnPointName}] 못 찾음. 위치 복원 스킵.");
+            }
         }
-
     }
+
 }

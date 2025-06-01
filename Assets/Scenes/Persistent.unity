@@ -2129,7 +2129,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_FontData:
-    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+    m_Font: {fileID: 12800000, guid: f32b281c4d19e044d9548f959edded58, type: 3}
     m_FontSize: 25
     m_FontStyle: 1
     m_BestFit: 0
@@ -2669,6 +2669,30 @@ PrefabInstance:
       propertyPath: m_Size.x
       value: 0.95
       objectReference: {fileID: 0}
+    - target: {fileID: 2398781727374648191, guid: dca95851477deb14794c63c72f5191da, type: 3}
+      propertyPath: m_Size.y
+      value: 2.0092702
+      objectReference: {fileID: 0}
+    - target: {fileID: 2398781727374648191, guid: dca95851477deb14794c63c72f5191da, type: 3}
+      propertyPath: m_Offset.y
+      value: 0.002339065
+      objectReference: {fileID: 0}
+    - target: {fileID: 2398781727374648191, guid: dca95851477deb14794c63c72f5191da, type: 3}
+      propertyPath: m_SpriteTilingProperty.oldSize.x
+      value: 1.125
+      objectReference: {fileID: 0}
+    - target: {fileID: 2398781727374648191, guid: dca95851477deb14794c63c72f5191da, type: 3}
+      propertyPath: m_SpriteTilingProperty.oldSize.y
+      value: 2.0625
+      objectReference: {fileID: 0}
+    - target: {fileID: 3218098375679128737, guid: dca95851477deb14794c63c72f5191da, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -1.047
+      objectReference: {fileID: 0}
+    - target: {fileID: 4607270261185645168, guid: dca95851477deb14794c63c72f5191da, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -3318188226485093758, guid: ae72133dacba6ec4eb33ecde48f50e56, type: 3}
     - target: {fileID: 5814977016451840323, guid: dca95851477deb14794c63c72f5191da, type: 3}
       propertyPath: launchForce
       value: 25

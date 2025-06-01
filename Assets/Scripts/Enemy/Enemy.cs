@@ -65,17 +65,20 @@ public class Enemy : MonoBehaviour
     private Rigidbody2D rb;
     private Collider2D col;
     private SpriteRenderer spriteRenderer;
-
+    private Animator animator;
     // 내부 상태 변수
     private float lastAttackTime; // 마지막 공격 시각 저장
     private bool isAttacking;     // 공격 중 플래그
     private bool isKnockback = false;
+    private bool isDead;
+
     void Awake()
     {
         var player = GameObject.FindWithTag("Player");
         playerTransform = player.transform;
         playerHealth = player.GetComponent<PlayerHealth>();
         playerInventory = player.GetComponent<PlayerInventory>();
+        animator = GetComponent<Animator>();
 
         // 컴포넌트들을 캐싱하여 GetComponent 호출 최소화
         rb = GetComponent<Rigidbody2D>();
@@ -158,6 +161,10 @@ public class Enemy : MonoBehaviour
     // 순찰 상태에서 호출: 좌우로 이동하고 에지/벽 감지
     private void FixedPatrol()
     {
+        float speed = Mathf.Abs(rb.linearVelocity.x);
+        // 부드러운 파라미터 변화: SetFloat(name, value, dampTime, deltaTime)
+        animator.SetFloat("Speed", speed);
+
         // 수평 속도 설정, 수직 속도는 기존 중력/관성을 유지
         rb.linearVelocity = new Vector2(patrolDir.x * patrolSpeed, rb.linearVelocity.y);
 
@@ -202,6 +209,7 @@ public class Enemy : MonoBehaviour
     // 공격 시도: 쿨타임이 지나야 실행
     private void TryAttack()
     {
+        if (isDead) return;
         if (Time.time < lastAttackTime + attackCooldown)
             return;
 
@@ -219,8 +227,9 @@ public class Enemy : MonoBehaviour
         rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
 
         // 타격 타이밍까지 대기 (0.2초)
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.6f);
 
+        animator.SetTrigger("isAttack");
         // OverlapCircleAll로 데미지 판정
         Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRadius, playerLayer);
         foreach (var hit in hits)
@@ -234,9 +243,10 @@ public class Enemy : MonoBehaviour
     // 피해 입었을 때 호출
     public void Damaged(int amount)
     {
+        if(isDead) return;
         hp -= amount;
         StartCoroutine(RedFlash());
-
+        animator.SetTrigger("isDamaged");
         if (playerTransform != null && rb != null)
         {
             Vector2 dir = ((Vector2)transform.position - (Vector2)playerTransform.position).normalized;
@@ -267,15 +277,17 @@ public class Enemy : MonoBehaviour
     // 사망 처리
     private void Die()
     {
-        if(playerHealth.currentMp < 5)
+        isDead = true;
+        if (playerHealth.currentMp < 5)
             playerHealth.currentMp++;
 
+        animator.SetTrigger("isDead");
         playerInventory.AddCoins(5);
 
         StopAllCoroutines();  // 진행 중인 코루틴 정지
         enabled = false;      // 스크립트 비활성화
         rb.linearVelocity = Vector2.zero;  // 관성 제거
-        Destroy(gameObject, 0.2f);        // 0.2초 후 오브젝트 제거
+        Destroy(gameObject, 0.6f);        // 0.2초 후 오브젝트 제거
     }
 
     // 진행 방향 반전 및 스프라이트 뒤집기

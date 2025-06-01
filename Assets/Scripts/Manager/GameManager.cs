@@ -13,11 +13,16 @@ public class PlayerData
     public int mp;
     public int coins;
 
-    // ① 보스 처치 여부를 저장할 문자열 리스트
+    // 보스 처치 여부를 저장할 리스트
     public List<string> defeatedBosses = new List<string>();
 
-    // ② 벽 파괴 여부를 저장할 문자열 리스트
+    // 벽 파괴 여부를 저장할 리스트
     public List<string> destroyedWalls = new List<string>();
+
+    // 쇼핑 아이템 구매 여부
+    public bool boughtAttackPower = false;
+    public bool boughtAttackRange = false;
+    public bool boughtAttackSpeed = false;
 }
 
 public class GameManager : MonoBehaviour
@@ -151,19 +156,13 @@ public class GameManager : MonoBehaviour
 
         yield return null;
     }
-    /// <summary>
-    /// 보스가 이미 처치되었는지를 확인
-    /// </summary>
-    /// <param name="bossID">예: "Level1_BossA"</param>
-    /// <returns>처치되었으면 true, 아니면 false</returns>
+    // 보스가 이미 처치되었는지를 확인
     public bool IsBossDefeated(string bossID)
     {
         return data.defeatedBosses.Contains(bossID);
     }
 
-    /// <summary>
-    /// 보스를 처치했음을 기록하고 저장까지 수행
-    /// </summary>
+    // 보스를 처치했음을 기록하고 저장까지 수행
     public void SetBossDefeated(string bossID)
     {
         if (!data.defeatedBosses.Contains(bossID))
@@ -176,17 +175,13 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 벽이 이미 파괴되었는지를 확인
-    /// </summary>
+    // 벽이 이미 파괴되었는지를 확인
     public bool IsWallDestroyed(string wallID)
     {
         return data.destroyedWalls.Contains(wallID);
     }
 
-    /// <summary>
-    /// 벽 파괴를 기록하고 저장까지 수행
-    /// </summary>
+    // 벽 파괴를 기록하고 저장까지 수행
     public void SetWallDestroyed(string wallID)
     {
         if (!data.destroyedWalls.Contains(wallID))
@@ -197,5 +192,53 @@ public class GameManager : MonoBehaviour
             File.WriteAllText(savePath, json);
             Debug.Log($"[GameManager] Wall destroyed recorded: {wallID}");
         }
+    }
+
+    // 상점 아이템 상태
+    public bool IsBoughtAttackPower() { return data.boughtAttackPower; }
+    public bool IsBoughtAttackRange() { return data.boughtAttackRange; }
+    public bool IsBoughtAttackSpeed() { return data.boughtAttackSpeed; }
+
+    public void SetBoughtAttackPower()
+    {
+        if (!data.boughtAttackPower)
+        {
+            data.boughtAttackPower = true;
+            SaveJSON();
+            Debug.Log("[GameManager] Bought AttackPower");
+        }
+    }
+
+    public void SetBoughtAttackRange()
+    {
+        if (!data.boughtAttackRange)
+        {
+            data.boughtAttackRange = true;
+            SaveJSON();
+            Debug.Log("[GameManager] Bought AttackRange");
+        }
+    }
+
+    public void SetBoughtAttackSpeed()
+    {
+        if (!data.boughtAttackSpeed)
+        {
+            data.boughtAttackSpeed = true;
+            SaveJSON();
+            Debug.Log("[GameManager] Bought AttackSpeed");
+        }
+    }
+    public void SetCoins(int newCoinCount)
+    {
+        data.coins = newCoinCount;
+        SaveJSON();
+        Debug.Log($"[GameManager] Coins updated to: {newCoinCount}");
+    }
+
+    // JSON 갱신만 담당하는 내부 함수
+    void SaveJSON()
+    {
+        string json = JsonUtility.ToJson(data, true);
+        File.WriteAllText(savePath, json);
     }
 }

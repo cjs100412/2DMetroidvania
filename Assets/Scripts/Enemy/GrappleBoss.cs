@@ -1,28 +1,28 @@
-using System;
 using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
 
 public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
 {
-    public ParticleSystem dieEffect;
+    [Header("===== 보스 ID 및 벽 ID (GameManager용) =====")]
+    public string bossID = "GrappleBoss";
+    public string wallID = "GrappleBoss_Wall";
+
+    [Header("사망 이펙트")]
+    public GameObject dieEffect;
     private SpriteRenderer spriteRenderer;
-    CinemachineCamera cinemachineCamera;
+    private CinemachineCamera cinemachineCamera;
     public GameObject wall;
 
     private Rigidbody2D rb;
     private BossController bossController;
-    private GameObject player;
-
-    [Header("===== 보스 ID 및 벽 ID (GameManager용) =====")]
-    public string bossID = "GrappleBoss";
-
-    public string wallID = "GrappleBoss_Wall";
+    private Transform player;
+    private PlayerInventory playerInventory;
+    private PlayerHealth playerHealth;
 
     [Header("카메라 줌인")]
     public float zoomFactor = 0.6f;
     public float zoomDuration = 2f;
-
     private float originalOrthoSize;
 
     [Header("슬로우 모션")]
@@ -33,7 +33,6 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
     public int maxHp = 100;
     private int hp;
     public int damage = 2;
-
     public bool isDead = false;
 
     [Header("움직임")]
@@ -44,9 +43,6 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
     public float attackRadius = 6f;
     public LayerMask playerLayer;
 
-    private PlayerHealth playerHealth;
-    private PlayerInventory playerInventory;
-
     public bool IsBusy => bossController != null && bossController.isBusy;
     public bool IsDead => isDead;
 
@@ -55,6 +51,7 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
 
     private void Awake()
     {
+        // 1) 이미 처치된 보스인지 확인
         if (GameManager.I != null && GameManager.I.IsBossDefeated(bossID))
         {
             if (wall != null) Destroy(wall);
@@ -62,83 +59,106 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
             return;
         }
 
-        playerInventory = player.GetComponent<PlayerInventory>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        rb = GetComponent<Rigidbody2D>();
-        bossController = GetComponent<BossController>();
-        cinemachineCamera = GameObject.FindWithTag("Cinemachine").GetComponent<CinemachineCamera>();
-        hp = maxHp;
-
+        // 2) 플레이어 찾기 → 그다음 playerInventory / playerHealth 할당
         var pgo = GameObject.FindWithTag("Player");
-        if (pgo != null) player = pgo;
-        else Debug.LogError("Player 태그 오브젝트가 없습니다.");
+        if (pgo != null)
+        {
+            player = pgo.transform;
+            playerInventory = pgo.GetComponent<PlayerInventory>();
+            playerHealth = pgo.GetComponent<PlayerHealth>();
 
-        if (cinemachineCamera != null)
-            originalOrthoSize = cinemachineCamera.Lens.OrthographicSize;
+            if (playerInventory == null)
+                Debug.LogError($"[{name}] PlayerInventory 컴포넌트가 없습니다.");
+            if (playerHealth == null)
+                Debug.LogError($"[{name}] PlayerHealth 컴포넌트가 없습니다.");
+        }
         else
-            Debug.LogError("Cinemachine Camera가 할당되지 않았습니다.");
+        {
+            Debug.LogError($"[{name}] Awake(): \"Player\" 태그 오브젝트를 찾을 수 없습니다.");
+        }
 
-        playerHealth = player.GetComponent<PlayerHealth>();
+        // 3) 나머지 컴포넌트 캐싱
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null)
+            Debug.LogError($"[{name}] SpriteRenderer 컴포넌트가 없습니다.");
 
+        rb = GetComponent<Rigidbody2D>();
+        if (rb == null)
+            Debug.LogError($"[{name}] Rigidbody2D 컴포넌트가 없습니다.");
+
+        bossController = GetComponent<BossController>();
+        if (bossController == null)
+            Debug.LogError($"[{name}] BossController 컴포넌트가 없습니다.");
+
+        var camObj = GameObject.FindWithTag("Cinemachine");
+        if (camObj != null)
+        {
+            cinemachineCamera = camObj.GetComponent<CinemachineCamera>();
+            if (cinemachineCamera == null)
+                Debug.LogError($"[{name}] \"Cinemachine\" 태그 오브젝트에 CinemachineCamera 컴포넌트가 없습니다.");
+            else
+                originalOrthoSize = cinemachineCamera.Lens.OrthographicSize;
+        }
+        else
+        {
+            Debug.LogError($"[{name}] Awake(): \"Cinemachine\" 태그 오브젝트를 찾을 수 없습니다.");
+        }
+
+        hp = maxHp;
     }
 
     private void Update()
     {
-        // 체력이 0 이하거나 공격 중이라면 상태 전환 로직을 건너뛰고 방향 처리만 수행
+        // 체력이 0 이하라면 Facing만 수행 후 리턴
         if (hp <= 0)
         {
             HandleFacing();
             return;
         }
 
-        // 플레이어가 사망했으면 아무 동작도 하지 않음
-        if (playerHealth.isDead)
+        // 플레이어가 죽었거나 playerHealth가 null이면 아무 동작 안 함
+        if (playerHealth != null && playerHealth.isDead)
             return;
 
-        Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRadius, playerLayer);
-        foreach (var hit in hits)
-            hit.GetComponent<PlayerHealth>()?.Damaged(damage);
+        // 공격 판정: 매 프레임에 범위 내 플레이어가 있으면 피해 주기
+        if (attackPoint != null)
+        {
+            Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRadius, playerLayer);
+            foreach (var hit in hits)
+            {
+                hit.GetComponent<PlayerHealth>()?.Damaged(damage);
+            }
+        }
 
         HandleFacing();
     }
 
     private void HandleFacing()
     {
-        SetScaleX(player.transform.position.x > transform.position.x ? 6f : -6f);
-
-    }
-
-    private void SetScaleX(float x)
-    {
+        if (player == null) return;
+        float xScale = (player.position.x > transform.position.x) ? 6f : -6f;
         Vector3 s = transform.localScale;
-        s.x = x;
+        s.x = xScale;
         transform.localScale = s;
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
-        // 죽으면 이동 정지
-        if (isDead)
+        // 죽었거나 패턴 실행 중이면 이동 정지
+        if (isDead || IsBusy || player == null)
         {
             rb.linearVelocity = Vector2.zero;
             return;
         }
 
-        if (IsBusy)
-            return;
-
         // 플레이어와 거리 계산
-        Vector2 diff = (Vector2)player.transform.position - (Vector2)transform.position;
-        float distSq = diff.sqrMagnitude;
+        Vector2 diff = (Vector2)player.position - (Vector2)transform.position;
         Vector2 toPlayer = diff.normalized;
 
-        // 그 방향으로 속도 설정
-
-        toPlayer.y = 0; // y축은 이동하지 않는다
+        // Y축 이동은 하지 않음
+        toPlayer.y = 0;
         rb.linearVelocity = toPlayer * moveSpeed;
-
     }
-
 
     // 피해 입었을 때 호출
     public void Damaged(int amount)
@@ -153,10 +173,13 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
 
     private IEnumerator RedFlash()
     {
+        if (spriteRenderer == null) yield break;
+
         Color original = spriteRenderer.color;
         spriteRenderer.color = Color.red;
         yield return new WaitForSeconds(0.2f);
-        spriteRenderer.color = original;
+        if (spriteRenderer != null)
+            spriteRenderer.color = original;
     }
 
     private void Die()
@@ -176,28 +199,29 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
 
         if (dieEffect != null)
             Instantiate(dieEffect, transform.position, Quaternion.identity);
-        playerInventory.AddCoins(50);
 
-        // 카메라 줌 및 슬로우 모션 시작
+        if (playerInventory != null)
+            playerInventory.AddCoins(50);
+
+        // 카메라 줌 및 슬로우 모션
         StartCoroutine(DoCameraZoom());
         StartCoroutine(DoSlowMotion());
 
-        // 모든 효과가 끝난 후 아이템 제거
+        // 벽 파괴
+        if (wall != null)
+            Destroy(wall);
+
+        // 일정 시간 뒤 보스 오브젝트 파괴
         float totalDuration = zoomDuration * 2 + slowDuration + 0.1f;
         Destroy(gameObject, totalDuration);
-        Destroy(wall);
     }
 
-
-    IEnumerator DoCameraZoom()
+    private IEnumerator DoCameraZoom()
     {
-        if (cinemachineCamera == null)
-            yield break;
+        if (cinemachineCamera == null) yield break;
 
         float targetSize = originalOrthoSize * zoomFactor;
         float elapsed = 0f;
-
-        // 줌 인
         while (elapsed < zoomDuration)
         {
             float t = elapsed / zoomDuration;
@@ -207,10 +231,8 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
         }
         cinemachineCamera.Lens.OrthographicSize = targetSize;
 
-        // 슬로우 모션 동안 유지
         yield return new WaitForSecondsRealtime(slowDuration);
 
-        // 줌 아웃
         elapsed = 0f;
         while (elapsed < zoomDuration)
         {
@@ -222,17 +244,13 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
         cinemachineCamera.Lens.OrthographicSize = originalOrthoSize;
     }
 
-
-    IEnumerator DoSlowMotion()
+    private IEnumerator DoSlowMotion()
     {
-        // 슬로우 모션 시작
         Time.timeScale = slowTimeScale;
         Time.fixedDeltaTime = 0.02f * slowTimeScale;
 
-        // 실제 시간으로 기다림
         yield return new WaitForSecondsRealtime(slowDuration);
 
-        // 시간 복구
         Time.timeScale = 1f;
         Time.fixedDeltaTime = 0.02f;
     }
@@ -243,6 +261,5 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
         Gizmos.color = Color.red;
         if (attackPoint != null)
             Gizmos.DrawWireSphere(attackPoint.position, attackRadius);
-
     }
 }

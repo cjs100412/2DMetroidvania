@@ -16,7 +16,7 @@ public class AoeDropSpellPattern : ScriptableObject, IBossPattern
     public float maxDistance = 40f;
     public float cooldown = 4f;
 
-    public ParticleSystem explodeEffect;
+    public GameObject explodeEffect;
 
     float lastUsedTime = -Mathf.Infinity;
     public float Cooldown => cooldown;

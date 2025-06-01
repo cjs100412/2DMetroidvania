@@ -78,6 +78,9 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
 
+    private bool appliedPowerUpgrade = false;
+    private bool appliedRangeUpgrade = false;
+    private bool appliedSpeedUpgrade = false;
     void Awake()
     {
         animator = GetComponent<Animator>();
@@ -85,6 +88,31 @@ public class PlayerMovement : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (playerCollider == null)
             playerCollider = GetComponent<Collider2D>();
+
+        // ─── 상점 구매 정보 확인 & 스탯 보정 ───
+        if (GameManager.I != null)
+        {
+            // 공격력 상승 (+10)
+            if (GameManager.I.IsBoughtAttackPower() && !appliedPowerUpgrade)
+            {
+                damage += 10;
+                appliedPowerUpgrade = true;
+            }
+
+            // 공격 범위 상승 (+1.5)
+            if (GameManager.I.IsBoughtAttackRange() && !appliedRangeUpgrade)
+            {
+                attackRadius += 1.5f;
+                appliedRangeUpgrade = true;
+            }
+
+            // 공격 속도 상승 (쿨타임 -0.2, 최소 0.1초 보장)
+            if (GameManager.I.IsBoughtAttackSpeed() && !appliedSpeedUpgrade)
+            {
+                attackCooldown = Mathf.Max(0.1f, attackCooldown - 0.2f);
+                appliedSpeedUpgrade = true;
+            }
+        }
     }
 
     void Update()
@@ -256,7 +284,7 @@ public class PlayerMovement : MonoBehaviour
         {
             // 5-1) 바라보는 방향을 계산: (적 위치 - 플레이어 위치).normalized
             Vector2 directionToEnemy = ((Vector2)hitCollider.transform.position - (Vector2)transform.position).normalized;
-
+            directionToEnemy.y = 0f;
             // 5-2) 적에게 데미지 주기
             //    (기존에는 hitCollider.GetComponent<Enemy>()?.Damaged(damage) 식으로만 하셨을 텐데,
             //     지금은 Damaged 후에 넉백 로직을 별도로 직접 호출하거나, 
@@ -318,7 +346,25 @@ public class PlayerMovement : MonoBehaviour
         if (prb != null)
             prb.linearVelocity = new Vector2(dir * rangedProjectileSpeed, 0f);
     }
-
+    public void ApplyShopUpgrades()
+    {
+        if (GameManager.I == null) return;
+        if (GameManager.I.IsBoughtAttackPower() && !appliedPowerUpgrade)
+        {
+            damage += 3;
+            appliedPowerUpgrade = true;
+        }
+        if (GameManager.I.IsBoughtAttackRange() && !appliedRangeUpgrade)
+        {
+            attackRadius += 1.5f;
+            appliedRangeUpgrade = true;
+        }
+        if (GameManager.I.IsBoughtAttackSpeed() && !appliedSpeedUpgrade)
+        {
+            attackCooldown = Mathf.Max(0.1f, attackCooldown - 0.2f);
+            appliedSpeedUpgrade = true;
+        }
+    }
     public void UnlockDoubleJump()
     {
         maxJumpCount = 2;
@@ -336,5 +382,13 @@ public class PlayerMovement : MonoBehaviour
         canRangedAttack = true;
         playerUI.ShowMpSlider();
         Debug.Log("RangedAttack UNLOCKED");
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        // 공격 범위 시각화 (빨간색)
+        Gizmos.color = Color.red;
+        if (attackPoint != null)
+            Gizmos.DrawWireSphere(attackPoint.position, attackRadius);
     }
 }

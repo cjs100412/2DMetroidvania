@@ -177,7 +177,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c16cf7c2e3ab5844098465795b25b680, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dieEffect: {fileID: 9169966119468206341, guid: ed962e35f7fa6f34f8d27aa6d19ea293, type: 3}
+  bossID: DoubleJumpBoss
+  wallID: DoubleJumpBoss_Wall
+  dieEffect: {fileID: 7177991128484655659, guid: 59a35ab9f68edff40b6e5332bed330f5, type: 3}
   wall: {fileID: 0}
   zoomFactor: 0.6
   zoomDuration: 1
