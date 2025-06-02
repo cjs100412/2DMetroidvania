@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: -3161125870969551610}
   - component: {fileID: -56944100512692717}
   - component: {fileID: 5037020536504532191}
-  - component: {fileID: 7597286776849658134}
   m_Layer: 11
   m_Name: BossBullet
   m_TagString: Untagged
@@ -80,7 +79,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -2883620272536033641, guid: ebf1907abc77d154ba646166befb4440, type: 3}
+  m_Sprite: {fileID: 4487909370968573847, guid: 641d4ee52510586458330a9fdd3daf05, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -153,7 +152,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.5
+  m_Radius: 0.32146424
 --- !u!114 &5037020536504532191
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -167,25 +166,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 10
---- !u!95 &7597286776849658134
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8163343930501831133}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: d489f56af1d390a4e86c7f4ba05261f3, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0

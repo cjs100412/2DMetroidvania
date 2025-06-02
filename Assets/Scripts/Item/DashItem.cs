@@ -5,6 +5,9 @@ using Unity.Cinemachine;
 [RequireComponent(typeof(Collider2D))]
 public class DashItem : MonoBehaviour
 {
+    [Header("아이템 고유 ID (예: Dash)")]
+    public string itemID = "Dash";
+
     [Header("획득 이펙트")]
     public ParticleSystem pickupEffect;
 
@@ -24,7 +27,16 @@ public class DashItem : MonoBehaviour
 
     void Awake()
     {
-        cinemachineCamera = GameObject.FindWithTag("Cinemachine").GetComponent<CinemachineCamera>();
+        // 1) 이미 수집된 아이템인지 확인
+        if (GameManager.I != null && GameManager.I.IsItemCollected(itemID))
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        // 2) 카메라 참조 및 초기 직교 크기 저장
+        cinemachineCamera = GameObject.FindWithTag("Cinemachine")
+                              .GetComponent<CinemachineCamera>();
         if (cinemachineCamera != null)
             originalOrthoSize = cinemachineCamera.Lens.OrthographicSize;
         else
@@ -39,23 +51,27 @@ public class DashItem : MonoBehaviour
         PlayerMovement player = other.GetComponent<PlayerMovement>();
         if (player != null)
         {
-            // 더블 점프 해금
+            // 1) 아이템 수집 기록 (한 번만 실행)
+            if (GameManager.I != null)
+                GameManager.I.SetItemCollected(itemID);
+
+            // 2) 플레이어 대시 능력 언락
             player.UnlockDash();
 
-            // 이펙트 재생
+            // 3) 이펙트 재생
             if (pickupEffect != null)
                 Instantiate(pickupEffect, transform.position, Quaternion.identity);
 
-            // 아이템 비가시화 및 콜라이더 비활성화
+            // 4) 아이템 비가시화 및 콜라이더 비활성화
             col.enabled = false;
             if (spriteRenderer != null)
                 spriteRenderer.enabled = false;
 
-            // 카메라 줌 및 슬로우 모션 시작
+            // 5) 카메라 줌 & 슬로우 모션 실행
             StartCoroutine(DoCameraZoom());
             StartCoroutine(DoSlowMotion());
 
-            // 모든 효과가 끝난 후 아이템 제거
+            // 6) 모든 효과가 끝난 후 아이템 제거
             float totalDuration = zoomDuration * 2 + slowDuration + 0.1f;
             Destroy(gameObject, totalDuration);
         }
@@ -73,13 +89,14 @@ public class DashItem : MonoBehaviour
         while (elapsed < zoomDuration)
         {
             float t = elapsed / zoomDuration;
-            cinemachineCamera.Lens.OrthographicSize = Mathf.Lerp(originalOrthoSize, targetSize, t);
+            cinemachineCamera.Lens.OrthographicSize =
+                Mathf.Lerp(originalOrthoSize, targetSize, t);
             elapsed += Time.unscaledDeltaTime;
             yield return null;
         }
         cinemachineCamera.Lens.OrthographicSize = targetSize;
 
-        // 슬로우 모션 동안 유지
+        // 슬로우 모션 유지
         yield return new WaitForSecondsRealtime(slowDuration);
 
         // 줌 아웃
@@ -87,7 +104,8 @@ public class DashItem : MonoBehaviour
         while (elapsed < zoomDuration)
         {
             float t = elapsed / zoomDuration;
-            cinemachineCamera.Lens.OrthographicSize = Mathf.Lerp(targetSize, originalOrthoSize, t);
+            cinemachineCamera.Lens.OrthographicSize =
+                Mathf.Lerp(targetSize, originalOrthoSize, t);
             elapsed += Time.unscaledDeltaTime;
             yield return null;
         }
@@ -96,14 +114,11 @@ public class DashItem : MonoBehaviour
 
     IEnumerator DoSlowMotion()
     {
-        // 슬로우 모션 시작
         Time.timeScale = slowTimeScale;
         Time.fixedDeltaTime = 0.02f * slowTimeScale;
 
-        // 실제 시간으로 기다림
         yield return new WaitForSecondsRealtime(slowDuration);
 
-        // 시간 복구
         Time.timeScale = 1f;
         Time.fixedDeltaTime = 0.02f;
     }

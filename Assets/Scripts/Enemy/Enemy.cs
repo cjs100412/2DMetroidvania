@@ -44,11 +44,11 @@ public class Enemy : MonoBehaviour
     // 낭떠러지/벽 감지에 사용할 레이어 마스크(땅 레이어)
     public LayerMask groundLayer;
     [Tooltip("발끝에서 얼마나 더 앞쪽을 검사할지")]
-    public float edgeDetectHorizOffset = 0.05f;
+    public float edgeDetectHorizOffset = 0.3f;
     [Tooltip("발밑에서 얼마나 더 아래를 검사할지")]
     public float edgeDetectVertOffset = 0.05f;
     [Tooltip("땅 감지 레이 길이")]
-    public float edgeDetectRayLength = 0.2f;
+    public float edgeDetectRayLength = 0.4f;
 
     [Header("Player Reference")]
     // 유니티 에디터에서 드래그로 할당 필요
@@ -162,23 +162,22 @@ public class Enemy : MonoBehaviour
     private void FixedPatrol()
     {
         float speed = Mathf.Abs(rb.linearVelocity.x);
-        // 부드러운 파라미터 변화: SetFloat(name, value, dampTime, deltaTime)
         animator.SetFloat("Speed", speed);
 
-        // 수평 속도 설정, 수직 속도는 기존 중력/관성을 유지
+        // 1) 순찰 이동
         rb.linearVelocity = new Vector2(patrolDir.x * patrolSpeed, rb.linearVelocity.y);
 
-        // 낭떠러지 검사용 레이 시작점 계산: 발끝 + 오프셋
-        Vector2 origin = new Vector2(
+        // 2) 낭떠러지 감지를 위한 OverlapCircle 방식
+        Vector2 footCenter = new Vector2(
             transform.position.x + patrolDir.x * (col.bounds.extents.x + edgeDetectHorizOffset),
-            transform.position.y - (col.bounds.extents.y + edgeDetectVertOffset)
+            transform.position.y - (col.bounds.extents.y - edgeDetectVertOffset)
         );
 
-        // 아래 방향으로 레이캐스트하여 땅이 있는지 검사
-        RaycastHit2D groundHit = Physics2D.Raycast(origin, Vector2.down, edgeDetectRayLength, groundLayer);
-        bool isGroundAhead = groundHit.collider != null;
+        // 땅 체크용 작은 원 반경 (0.1f 정도 추천)
+        float circleRadius = 0.1f;
+        bool isGroundAhead = Physics2D.OverlapCircle(footCenter, circleRadius, groundLayer) != null;
 
-        // 벽이 있는지 검사: 몸통 높이 약간 위에서 앞쪽으로 레이캐스트
+        // 3) 벽 감지 (레이 방식 유지)
         RaycastHit2D wallHit = Physics2D.Raycast(
             (Vector2)transform.position + Vector2.up * 0.1f,
             patrolDir,
@@ -186,17 +185,16 @@ public class Enemy : MonoBehaviour
             groundLayer
         );
 
-        // 에디터에서만 시각화용 레이 그리기
 #if UNITY_EDITOR
-        Debug.DrawRay(origin, Vector2.down * edgeDetectRayLength, Color.red);
-        Debug.DrawRay(transform.position + Vector3.up * 0.1f,
-                      patrolDir * (col.bounds.extents.x + edgeDetectHorizOffset),
-                      Color.blue);
+        Debug.DrawLine(footCenter + Vector2.left * circleRadius, footCenter + Vector2.right * circleRadius, Color.magenta);
+        Debug.DrawRay(transform.position + Vector3.up * 0.1f, patrolDir * (col.bounds.extents.x + edgeDetectHorizOffset), Color.blue);
 #endif
 
-        // 낭떠러지이거나 벽이 있으면 방향 전환
+        // 4) 낭떠러지 or 벽이 있으면 방향 전환
         if (!isGroundAhead || wallHit.collider != null)
+        {
             FlipDirection();
+        }
     }
 
     // 추격 상태에서 호출: 플레이어를 향해 이동

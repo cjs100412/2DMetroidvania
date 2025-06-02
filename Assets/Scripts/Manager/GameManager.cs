@@ -23,6 +23,8 @@ public class PlayerData
     public bool boughtAttackPower = false;
     public bool boughtAttackRange = false;
     public bool boughtAttackSpeed = false;
+
+    public List<string> collectedItems = new List<string>();
 }
 
 public class GameManager : MonoBehaviour
@@ -30,7 +32,8 @@ public class GameManager : MonoBehaviour
     public static GameManager I { get; private set; }
     string savePath;
     PlayerData data;
-
+    public int SavedHp => data.hp;
+    public int SavedMp => data.mp;
     public int SavedCoins => data.coins;
 
     void Awake()
@@ -77,6 +80,10 @@ public class GameManager : MonoBehaviour
         data.mp = 5;          // 기본 MP
         data.coins = 0;           // 기본 동전
 
+        data.defeatedBosses = new List<string>();
+        data.destroyedWalls = new List<string>();
+        data.collectedItems = new List<string>();
+
         string json = JsonUtility.ToJson(data, true);
         File.WriteAllText(savePath, json);
         Debug.Log($"[GameManager] Save initialized: {savePath}");
@@ -106,6 +113,9 @@ public class GameManager : MonoBehaviour
 
         string json = File.ReadAllText(savePath);
         data = JsonUtility.FromJson<PlayerData>(json);
+        if (data.defeatedBosses == null) data.defeatedBosses = new List<string>();
+        if (data.destroyedWalls == null) data.destroyedWalls = new List<string>();
+        if (data.collectedItems == null) data.collectedItems = new List<string>();
         Debug.Log("Game Loaded. Loading Scene: " + data.sceneName);
 
         // 씬을 비동기로 로드하고, 로드 완료 후에 위치·상태 복원
@@ -209,6 +219,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
+
     public void SetBoughtAttackRange()
     {
         if (!data.boughtAttackRange)
@@ -219,6 +230,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
+
     public void SetBoughtAttackSpeed()
     {
         if (!data.boughtAttackSpeed)
@@ -228,12 +240,32 @@ public class GameManager : MonoBehaviour
             Debug.Log("[GameManager] Bought AttackSpeed");
         }
     }
+
+
     public void SetCoins(int newCoinCount)
     {
         data.coins = newCoinCount;
         SaveJSON();
         Debug.Log($"[GameManager] Coins updated to: {newCoinCount}");
     }
+
+
+    public bool IsItemCollected(string itemID)
+    {
+        return data.collectedItems.Contains(itemID);
+    }
+
+
+    public void SetItemCollected(string itemID)
+    {
+        if (!data.collectedItems.Contains(itemID))
+        {
+            data.collectedItems.Add(itemID);
+            SaveJSON();
+            Debug.Log($"[GameManager] Item collected recorded: {itemID}");
+        }
+    }
+
 
     // JSON 갱신만 담당하는 내부 함수
     void SaveJSON()

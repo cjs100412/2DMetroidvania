@@ -31,7 +31,7 @@ public class CloseRangeKnockbackPattern : ScriptableObject, IBossPattern
     {
         lastUsedTime = Time.time;
         // 1) 넉백 애니메이션 트리거
-        //boss.Animator.SetTrigger("Knockback");
+        boss.Animator.SetTrigger("Knockback");
         yield return new WaitForSeconds(0.3f);
 
         // 2) 플레이어 넉백
@@ -39,6 +39,7 @@ public class CloseRangeKnockbackPattern : ScriptableObject, IBossPattern
         if (rb != null)
         {
             Vector2 dir = (player.position - boss.transform.position).normalized;
+            dir.y = 0f;
             rb.AddForce(dir * knockbackForce, ForceMode2D.Impulse);
             player.gameObject.GetComponent<PlayerMovement>().isKnockback = true;
             Debug.Log("넉백");

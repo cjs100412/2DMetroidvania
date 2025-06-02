@@ -35,7 +35,7 @@ public class EnergyBeamSweepPattern : ScriptableObject, IBossPattern
 
         // 2) 빔 인스턴스 생성
         var beam = Instantiate(beamPrefab, boss.transform.position, Quaternion.identity);
-        beam.transform.localScale = new Vector3(1f, 16f, 1f);
+        beam.transform.localScale = new Vector3(4f, 32f, 1f);
         // 3) 스윕 동작
         float elapsed = 0f;
         while (elapsed < sweepDuration)

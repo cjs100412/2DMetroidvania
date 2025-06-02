@@ -1,26 +1,27 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using Unity.Cinemachine;
 
 public class GameBootstrap : MonoBehaviour
 {
-    [Header("Ç×»ó ÄÑµÑ Persistent ¾À")]
+    [Header("í•­ìƒ ì¼œë‘˜ Persistent ì”¬")]
     public string persistentSceneName = "Persistent";
 
-    [Header("ÃÖÃÊ ·ÎµåÇÒ ¸Ê(Zone) ¾À")]
+    [Header("ìµœì´ˆ ë¡œë“œí•  ë§µ(Zone) ì”¬")]
     public string initialZoneName = "StartScene";
-    [Header("ÃÖÃÊ ·ÎµåÇÒ ½ºÆù Æ÷ÀÎÆ® ÀÌ¸§")]
+    [Header("ìµœì´ˆ ë¡œë“œí•  ìŠ¤í° í¬ì¸íŠ¸ ì´ë¦„")]
     public string initialSpawnPointName = "StartSpawn";
 
     private IEnumerator Start()
     {
-        // 1) Persistent ¾ÀÀº ÇÑ ¹ø¸¸ ºÒ·¯¿À±â
+        // 1) Persistent ì”¬ì€ í•œ ë²ˆë§Œ ë¶ˆëŸ¬ì˜¤ê¸°
         if(GameManager.I == null)
         {
             yield return SceneManager.LoadSceneAsync(persistentSceneName, LoadSceneMode.Additive);
         }
 
-        // 2) ÀÌÀü Zone ¾ğ·Îµå (ºó °ª ¾Æ´Ò ¶§)
+        // 2) ì´ì „ Zone ì–¸ë¡œë“œ (ë¹ˆ ê°’ ì•„ë‹ ë•Œ)
         if (!string.IsNullOrEmpty(SceneLoader.CurrentZone))
         {
             Scene prev = SceneManager.GetSceneByName(SceneLoader.CurrentZone);
@@ -30,7 +31,7 @@ public class GameBootstrap : MonoBehaviour
             }
         }
 
-        // 3) ´ÙÀ½ Zone/Spawn °áÁ¤ (Ã¼Å©Æ÷ÀÎÆ® ¾øÀ¸¸é ÃÊ±â°ª »ç¿ë)
+        // 3) ë‹¤ìŒ Zone/Spawn ê²°ì • (ì²´í¬í¬ì¸íŠ¸ ì—†ìœ¼ë©´ ì´ˆê¸°ê°’ ì‚¬ìš©)
         string nextZone = string.IsNullOrEmpty(SceneLoader.NextZone)
             ? initialZoneName
             : SceneLoader.NextZone;
@@ -38,15 +39,15 @@ public class GameBootstrap : MonoBehaviour
             ? initialSpawnPointName
             : SceneLoader.NextSpawnPoint;
 
-        // 4) »õ Zone ·Îµå & ½ºÆù
+        // 4) ìƒˆ Zone ë¡œë“œ & ìŠ¤í°
         yield return LoadNewZone(nextZone, nextSpawn);
 
-        // 5) »óÅÂ Å¬¸®¾î
+        // 5) ìƒíƒœ í´ë¦¬ì–´
         SceneLoader.CurrentZone = nextZone;
         SceneLoader.NextZone = null;
         SceneLoader.NextSpawnPoint = null;
 
-        // 6) Bootstrap ¾ğ·Îµå
+        // 6) Bootstrap ì–¸ë¡œë“œ
         yield return SceneManager.UnloadSceneAsync(gameObject.scene.name);
     }
 
@@ -55,31 +56,37 @@ public class GameBootstrap : MonoBehaviour
     {
         if (string.IsNullOrEmpty(zoneName))
         {
-            Debug.LogError($"LoadNewZone: zoneNameÀÌ ºñ¾î ÀÖ½À´Ï´Ù!");
+            Debug.LogError($"LoadNewZone: zoneNameì´ ë¹„ì–´ ìˆìŠµë‹ˆë‹¤!");
             yield break;
         }
 
-        // 1) ´ë»ó ZoneÀ» Additive ¸ğµå·Î ·Îµå
+        // 1) ëŒ€ìƒ Zoneì„ Additive ëª¨ë“œë¡œ ë¡œë“œ
         yield return SceneManager.LoadSceneAsync(zoneName, LoadSceneMode.Additive);
         SceneManager.SetActiveScene(SceneManager.GetSceneByName(zoneName));
 
-        // 2) ÇÃ·¹ÀÌ¾î À§Ä¡ ÀÌµ¿
+        // 2) í”Œë ˆì´ì–´ ìœ„ì¹˜ ì´ë™
         var player = GameObject.FindWithTag("Player");
         if (player != null)
         {
             var spawn = GameObject.Find(spawnPointName);
             if (spawn != null)
             {
-                // 2-1) À§Ä¡ º¹¿ø
-                player.transform.position = spawn.transform.position;
-
                 var rb = player.GetComponent<Rigidbody2D>();
+                // (1) í•­ìƒ ìœ„ì¹˜ë§Œ ë³µì›
+                player.transform.position = spawn.transform.position;
                 if (rb != null)
                     rb.linearVelocity = Vector2.zero;
 
-                //var ph = player.GetComponent<PlayerHealth>();
-                //if (ph != null)
-                //    ph.Respawn(spawn.transform.position, ph.maxHp, ph.maxMp);
+                // (2) â€œì£½ì€ ë’¤ ë¶€í™œâ€ ì‹œì—ë§Œ Respawn í˜¸ì¶œ
+                var ph = player.GetComponent<PlayerHealth>();
+                if (ph != null && SceneLoader.IsRespawn)
+                {
+                    // ì €ì¥ëœ HP/MPë¡œë§Œ íšŒë³µ
+                    int savedHp = GameManager.I.SavedHp;
+                    int savedMp = GameManager.I.SavedMp;
+                    ph.Respawn(spawn.transform.position, savedHp, savedMp);
+                }
+
 
                 var inv = player.GetComponent<PlayerInventory>();
                 if (inv != null)
@@ -88,15 +95,43 @@ public class GameBootstrap : MonoBehaviour
                     inv.CoinCount = 0;
                     inv.OnCoinChanged?.Invoke(0);
 
-                    // ÀúÀåµÈ ÃÖ½Å ÄÚÀÎ ¼ö¸¸Å­ ´Ù½Ã Ãß°¡
+                    // ì €ì¥ëœ ìµœì‹  ì½”ì¸ ìˆ˜ë§Œí¼ ë‹¤ì‹œ ì¶”ê°€
                     inv.AddCoins(GameManager.I.SavedCoins);
                 }
+                if (SceneLoader.IsRespawn)
+                    SceneLoader.IsRespawn = false;
             }
             else
             {
-                Debug.LogWarning($"SpawnPoint[{spawnPointName}] ¸ø Ã£À½. À§Ä¡ º¹¿ø ½ºÅµ.");
+                Debug.LogWarning($"SpawnPoint[{spawnPointName}] ëª» ì°¾ìŒ. ìœ„ì¹˜ ë³µì› ìŠ¤í‚µ.");
             }
         }
+        var brain = Camera.main.GetComponent<CinemachineBrain>();
+        if (brain != null)
+        {
+            Debug.Log("ë¸”ë Œë”©");
+            // ì›ë˜ ë¸”ë Œë”© ì„¸íŒ… ë°±ì—…
+            var backupBlend = brain.DefaultBlend;
+            // ì»· ì „í™˜(ë¸”ë Œë”© ì‹œê°„ 0ì´ˆ)
+            brain.DefaultBlend = new CinemachineBlendDefinition(CinemachineBlendDefinition.Styles.Cut, 0f);
+
+            // ì”¬ ë‚´ì— ìˆëŠ” ì²« ë²ˆì§¸ Virtual Cameraë¥¼ ì°¾ì•„ Follow/LookAtì„ í”Œë ˆì´ì–´ë¡œ ì§€ì •
+            var vcam = FindFirstObjectByType<CinemachineVirtualCameraBase>();
+            if (vcam != null && player != null)
+            {
+                Debug.Log("ifêµ¬ë¬¸ì— ë“¤ì–´ì˜´");
+                vcam.Priority = 100;
+                vcam.Follow = player.transform;
+                vcam.LookAt = player.transform;
+            }
+
+            // í•œ í”„ë ˆì„ ëŒ€ê¸° â†’ ì»· ì „í™˜ ì ìš©
+            yield return null;
+
+            // ë¸”ë Œë”© ì„¤ì • ì›ë³µ
+            brain.DefaultBlend = backupBlend;
+        }
+
     }
 
 }

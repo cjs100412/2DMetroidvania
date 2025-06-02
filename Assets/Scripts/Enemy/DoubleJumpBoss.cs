@@ -20,6 +20,7 @@ public class DoubleJumpBoss : MonoBehaviour, IBossDeath
     private Rigidbody2D rb;
     private BossController bossController;
     private GameObject player;
+    private Animator animator;
 
     [Header("카메라 줌인")]
     public float zoomFactor = 0.6f;
@@ -49,6 +50,8 @@ public class DoubleJumpBoss : MonoBehaviour, IBossDeath
 
     private PlayerInventory playerInventory;
     private PlayerHealth playerHealth;
+    private PlayerMovement playerMovement;
+    public float playerKnockbackForce = 10f;
 
     private float lastAttackTime;
     private bool isAttacking;
@@ -85,12 +88,16 @@ public class DoubleJumpBoss : MonoBehaviour, IBossDeath
             playerHealth = player.GetComponent<PlayerHealth>();
             if (playerHealth == null)
                 Debug.LogError($"[{name}] Player 오브젝트에 PlayerHealth 컴포넌트가 없습니다!");
+
+            playerMovement = player.GetComponent<PlayerMovement>();
+            if (playerMovement == null)
+                Debug.LogError($"[{name}] Player 오브젝트에 PlayerMovement 컴포넌트가 없습니다!");
         }
         else
         {
             Debug.LogError($"[{name}] Awake(): \"Player\" 태그를 가진 오브젝트를 찾을 수 없습니다.");
         }
-
+        animator = GetComponent<Animator>();
         // 2) 스프라이트 렌더러, 리지드바디, BossController 가져오기
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer == null)
@@ -189,6 +196,8 @@ public class DoubleJumpBoss : MonoBehaviour, IBossDeath
         float distSq = diff.sqrMagnitude;
         Vector2 toPlayer = diff.normalized;
 
+        
+
         // 기존 Y축 속도 보존하면서, 범위 내에서만 X축으로 이동
         Vector2 vel = rb.linearVelocity;
         if (distSq <= 40f)
@@ -200,6 +209,10 @@ public class DoubleJumpBoss : MonoBehaviour, IBossDeath
             vel.x = 0f;
         }
         rb.linearVelocity = vel;
+
+        float speed = Mathf.Abs(rb.linearVelocity.x);
+        // 부드러운 파라미터 변화: SetFloat(name, value, dampTime, deltaTime)
+        animator.SetFloat("Speed", speed);
 
         // 공격 범위 내이면 TryAttack()
         if (distSq <= attackRange * attackRange)
@@ -229,19 +242,32 @@ public class DoubleJumpBoss : MonoBehaviour, IBossDeath
         isAttacking = true;
         // 공격 중에는 이동 X
         rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
-
+        animator.SetTrigger("isAttack");
         // 타격 타이밍까지 대기
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.5f);
 
         // 공격 판정: OverlapCircleAll
         if (attackPoint != null)
         {
+
             Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRadius, playerLayer);
             foreach (var hit in hits)
             {
+                Vector2 directionToEnemy = ((Vector2)hit.transform.position - (Vector2)transform.position).normalized;
+                directionToEnemy.y = 0f;
                 var ph = hit.GetComponent<PlayerHealth>();
                 if (ph != null)
                     ph.Damaged(damage);
+
+                //플레이어 넉백
+                Rigidbody2D playerRb = hit.GetComponent<Rigidbody2D>();
+                if (playerRb != null)
+                {
+                    // Impulse 모드로 단번에 힘을 가해 준다
+                    playerRb.AddForce(directionToEnemy * playerKnockbackForce, ForceMode2D.Impulse);
+                    playerMovement.isKnockback = true;
+                    StartCoroutine(playerMovement.ResetPlayerKnockback());
+                }
             }
         }
         else
@@ -298,7 +324,7 @@ public class DoubleJumpBoss : MonoBehaviour, IBossDeath
             return;
 
         isDead = true;
-
+        animator.SetTrigger("isDead");
         if (GameManager.I != null)
         {
             GameManager.I.SetBossDefeated(bossID);
@@ -344,7 +370,7 @@ public class DoubleJumpBoss : MonoBehaviour, IBossDeath
         }
 
         // 일정 시간 뒤 몹 오브젝트 파괴
-        float totalDuration = zoomDuration * 2 + slowDuration + 0.1f;
+        float totalDuration = zoomDuration + slowDuration;
         Destroy(gameObject, totalDuration);
     }
 

@@ -19,6 +19,7 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
     private Transform player;
     private PlayerInventory playerInventory;
     private PlayerHealth playerHealth;
+    private Animator animator;
 
     [Header("카메라 줌인")]
     public float zoomFactor = 0.6f;
@@ -77,6 +78,7 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
             Debug.LogError($"[{name}] Awake(): \"Player\" 태그 오브젝트를 찾을 수 없습니다.");
         }
 
+        animator = GetComponent<Animator>();
         // 3) 나머지 컴포넌트 캐싱
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer == null)
@@ -150,7 +152,9 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
             rb.linearVelocity = Vector2.zero;
             return;
         }
-
+        float speed = Mathf.Abs(rb.linearVelocity.x);
+        // 부드러운 파라미터 변화: SetFloat(name, value, dampTime, deltaTime)
+        animator.SetFloat("Speed", speed);
         // 플레이어와 거리 계산
         Vector2 diff = (Vector2)player.position - (Vector2)transform.position;
         Vector2 toPlayer = diff.normalized;
@@ -186,7 +190,7 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
     {
         if (isDead) return;
         isDead = true;
-
+        animator.SetTrigger("isDead");
         if (GameManager.I != null)
         {
             GameManager.I.SetBossDefeated(bossID);

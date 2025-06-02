@@ -2693,6 +2693,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: -3318188226485093758, guid: ae72133dacba6ec4eb33ecde48f50e56, type: 3}
+    - target: {fileID: 5277601069417478670, guid: dca95851477deb14794c63c72f5191da, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.357
+      objectReference: {fileID: 0}
     - target: {fileID: 5814977016451840323, guid: dca95851477deb14794c63c72f5191da, type: 3}
       propertyPath: launchForce
       value: 25
@@ -2704,6 +2708,14 @@ PrefabInstance:
     - target: {fileID: 7946018117937005841, guid: dca95851477deb14794c63c72f5191da, type: 3}
       propertyPath: maxHp
       value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 7946018117937005841, guid: dca95851477deb14794c63c72f5191da, type: 3}
+      propertyPath: deathFlashCount
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7946018117937005841, guid: dca95851477deb14794c63c72f5191da, type: 3}
+      propertyPath: invincibleDuration
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 8073386854672078308, guid: dca95851477deb14794c63c72f5191da, type: 3}
       propertyPath: m_GravityScale
@@ -2717,6 +2729,10 @@ PrefabInstance:
       propertyPath: playerUI
       value: 
       objectReference: {fileID: 903084261}
+    - target: {fileID: 9036405933866672044, guid: dca95851477deb14794c63c72f5191da, type: 3}
+      propertyPath: AttackUpgradeEffect
+      value: 
+      objectReference: {fileID: 2360655870356088562, guid: 57a776ff377f3c44e8403e2067a4d41f, type: 3}
     - target: {fileID: 9036405933866672044, guid: dca95851477deb14794c63c72f5191da, type: 3}
       propertyPath: enemyKnockbackForce
       value: 10

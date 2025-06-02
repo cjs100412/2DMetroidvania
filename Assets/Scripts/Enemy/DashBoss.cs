@@ -19,6 +19,7 @@ public class DashBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
     private Transform player;
     private PlayerInventory playerInventory;
     private PlayerHealth playerHealth;
+    private Animator animator;
 
     [Header("카메라 줌인")]
     public float zoomFactor = 0.6f;
@@ -41,6 +42,11 @@ public class DashBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
     public float maxDistanceToPlayer = 8f;  // 이보다 멀면 다가감
     public float wanderRadius = 2f;         // 배회 반경
     private Vector2 wanderTarget;
+
+    [Header("공격 셋팅")]
+    public Transform attackPoint;
+    public float attackRadius = 6f;
+    public LayerMask playerLayer;
 
     public bool IsBusy => bossController != null && bossController.isBusy;
     public bool IsDead => isDead;
@@ -76,6 +82,7 @@ public class DashBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
             Debug.LogError($"[{name}] Awake(): \"Player\" 태그의 오브젝트를 찾을 수 없습니다.");
         }
 
+        animator = GetComponent<Animator>();
         // 3) 나머지 컴포넌트 캐싱
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer == null)
@@ -119,6 +126,14 @@ public class DashBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
         if (playerHealth != null && playerHealth.isDead)
             return;
 
+        if (attackPoint != null)
+        {
+            Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRadius, playerLayer);
+            foreach (var hit in hits)
+            {
+                hit.GetComponent<PlayerHealth>()?.Damaged(damage);
+            }
+        }
         HandleFacing();
     }
 
@@ -152,6 +167,10 @@ public class DashBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
                 ChooseNewWanderTarget();
             dir = (wanderTarget - (Vector2)transform.position).normalized;
         }
+
+        float speed = Mathf.Abs(rb.linearVelocity.x);
+        // 부드러운 파라미터 변화: SetFloat(name, value, dampTime, deltaTime)
+        animator.SetFloat("Speed", speed);
 
         // Y축 움직임 비율 조정
         dir.y *= 0.1f;
@@ -193,7 +212,7 @@ public class DashBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
     {
         if (isDead) return;
         isDead = true;
-
+        animator.SetTrigger("isDead");
         if (GameManager.I != null)
         {
             GameManager.I.SetBossDefeated(bossID);
@@ -260,5 +279,13 @@ public class DashBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
 
         Time.timeScale = 1f;
         Time.fixedDeltaTime = 0.02f;
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        // 공격 범위 시각화 (빨간색)
+        Gizmos.color = Color.red;
+        if (attackPoint != null)
+            Gizmos.DrawWireSphere(attackPoint.position, attackRadius);
     }
 }

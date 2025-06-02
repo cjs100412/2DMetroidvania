@@ -7,7 +7,7 @@ public class HomingProjectile : MonoBehaviour
     private Rigidbody2D rb;
     private float speed;
     private float turnSpeed;
-
+    public int damage = 10;
     /// <summary>
     /// 초기화: 발사 패턴에서 호출합니다.
     /// </summary>
@@ -42,7 +42,7 @@ public class HomingProjectile : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            other.GetComponent<PlayerHealth>()?.Damaged(10); // 맞추고 싶은 대미지
+            other.GetComponent<PlayerHealth>()?.Damaged(damage); // 맞추고 싶은 대미지
             Destroy(gameObject);
         }
         else if (other.gameObject.layer == LayerMask.NameToLayer("Ground"))

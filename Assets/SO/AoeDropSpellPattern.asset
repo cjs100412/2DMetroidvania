@@ -15,8 +15,8 @@ MonoBehaviour:
   spellPrefab: {fileID: 5053225352103904879, guid: cc43e859dcd6054439248c52f67f532b, type: 3}
   dropHeight: 10
   dropTime: 1
-  explodeRadius: 3
-  damage: 5
+  explodeRadius: 5
+  damage: 10
   minDistance: 0
   maxDistance: 40
   cooldown: 4

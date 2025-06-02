@@ -16,6 +16,7 @@ public class ZoneTransition : MonoBehaviour
         SceneLoader.NextZone = targetZoneScene;
         SceneLoader.NextSpawnPoint = spawnPointName;
         // Bootstrap 씬을 Single 모드로 로드 -> 기존 맵/Bootstrap 모두 언로드
+        SceneLoader.IsRespawn = false;
         SceneManager.LoadScene("Bootstrap", LoadSceneMode.Additive);
     }
 }

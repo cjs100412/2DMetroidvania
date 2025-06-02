@@ -1,16 +1,17 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 [CreateAssetMenu(
     fileName = "JumpAttackPattern",
-    menuName = "BossPatterns/Jump Attack",
+    menuName = "BossPatterns/Jump Attack (Max 40m)",
     order = 12)]
 public class JumpAttackPattern : ScriptableObject, IBossPattern
 {
     [Header("Distance & Cooldown")]
-    public float minDistance = 20f;   // 점프 패턴 최소 거리
-    public float maxDistance = 40f;   // 점프 패턴 최대 거리
+    [Tooltip("점프 패턴 최대 거리 (유효 사거리)")]
+    public float maxDistance = 40f;
     public float cooldown = 5f;    // 재사용 대기
+    public GameObject effect;
 
     [Header("Jump Speed Tuning")]
     [Tooltip("점프 초기 속도 (상승)")]
@@ -22,7 +23,7 @@ public class JumpAttackPattern : ScriptableObject, IBossPattern
 
     [Header("Landing Damage")]
     public float damageRadius = 3f;    // 착지 후 넉백 반경
-    public int damage = 5;    // 입힐 피해량
+    public int damage = 5;             // 입힐 피해량
 
     [Header("Ground Check (Pattern Only)")]
     [Tooltip("보스 발밑 기준으로 땅을 감지할 오프셋")]
@@ -32,6 +33,10 @@ public class JumpAttackPattern : ScriptableObject, IBossPattern
     [Tooltip("땅 레이어")]
     public LayerMask groundLayer;
 
+    // 가까이 붙었을 때 수평 이동을 생략하는 임계값
+    [Header("최소 수평 이동 임계값")]
+    [Tooltip("이 값(유닛)보다 플레이어와 보스 사이 거리가 작으면 수평 이동 없이 수직 점프만 수행")]
+    public float minHorizontalThreshold = 0.1f;
 
     float lastUsedTime = -Mathf.Infinity;
     public float Cooldown => cooldown;
@@ -45,8 +50,8 @@ public class JumpAttackPattern : ScriptableObject, IBossPattern
     public bool CanExecute(BossController boss, Transform player)
     {
         float dist = Vector2.Distance(boss.transform.position, player.position);
+        // 쿨다운이 돌았고 최대 사거리 이내에 있을 때만 실행
         return Time.time >= lastUsedTime + cooldown
-            && dist >= minDistance
             && dist <= maxDistance;
     }
 
@@ -57,17 +62,25 @@ public class JumpAttackPattern : ScriptableObject, IBossPattern
 
         // 1) 점프 애니메이션
         boss.Animator.SetTrigger("Jump");
-        yield return new WaitForSeconds(0.1f); // 절반으로 줄여서 반응 빠르게
+        yield return new WaitForSeconds(0.1f);
 
         // 2) 점프 실행
         var rb = boss.GetComponent<Rigidbody2D>();
         float originalGravity = rb.gravityScale;
-        rb.gravityScale = originalGravity * gravityMultiplier;   // 중력 크게
+        rb.gravityScale = originalGravity * gravityMultiplier;
 
-        Vector2 dir = (player.position - boss.transform.position).normalized;
-        rb.linearVelocity = new Vector2(dir.x * horizontalSpeed, jumpForce);
+        // 플레이어 현재 위치 방향으로 수평 속도 설정하되,
+        // 거리가 minHorizontalThreshold보다 작으면 수평 성분 0 처리
+        Vector2 toPlayer = player.position - boss.transform.position;
+        float distance = toPlayer.magnitude;
+        float dirX = 0f;
+        if (distance > minHorizontalThreshold)
+        {
+            dirX = toPlayer.normalized.x;
+        }
+        rb.linearVelocity = new Vector2(dirX * horizontalSpeed, jumpForce);
 
-        // 살짝 기다려서 물리 엔진 반영
+        // 물리 엔진 적용을 위해 한 프레임 대기
         yield return new WaitForFixedUpdate();
 
         // 3) 착지 대기
@@ -94,14 +107,22 @@ public class JumpAttackPattern : ScriptableObject, IBossPattern
         // 4) 착지 순간 데미지
         Collider2D[] hits = Physics2D.OverlapCircleAll(boss.transform.position, damageRadius, LayerMask.GetMask("Player"));
         foreach (var hit in hits)
+        {
             hit.GetComponent<PlayerHealth>()?.Damaged(damage);
-        Debug.Log("착지");
+        }
         rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
 
-        // 5) 클린업
-        rb.gravityScale = originalGravity;     // 중력 복구
-        yield return new WaitForSeconds(0.1f); // 여유 짧게
+        // 5) 이펙트 생성
+        if (effect != null)
+        {
+            Instantiate(effect, boss.transform.position, Quaternion.identity);
+        }
+
+        // 6) 중력 복구 및 마무리 대기
+        rb.gravityScale = originalGravity;
+        yield return new WaitForSeconds(0.1f);
 
         boss.isBusy = false;
     }
+
 }

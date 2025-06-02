@@ -14,6 +14,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("공격 이펙트")]
     public GameObject AttackEffect;
+    public GameObject AttackUpgradeEffect;
 
     [Header("바닥 검사 레이어")]
     public LayerMask groundLayer;
@@ -268,7 +269,28 @@ public class PlayerMovement : MonoBehaviour
 
         // 2) 공격 애니메이션 트리거 (애니메이터에 isAttack 트리거가 있어야 함)
         animator.SetTrigger("isAttack");
-        Instantiate(AttackEffect,attackPoint.position,Quaternion.identity);
+        if (appliedRangeUpgrade)
+        {
+            GameObject ef = Instantiate(AttackUpgradeEffect, attackPoint.position, Quaternion.identity);
+
+            if (transform.localScale.x < 0f)
+            {
+                Vector3 s = ef.transform.localScale;
+                s.x *= -1f;
+                ef.transform.localScale = s;
+            }
+        }
+        else
+        {
+            GameObject ef = Instantiate(AttackEffect, attackPoint.position, Quaternion.identity);
+
+            if (transform.localScale.x < 0f)
+            {
+                Vector3 s = ef.transform.localScale;
+                s.x *= -1f;
+                ef.transform.localScale = s;
+            }
+        }
 
         // 3) 최종적으로 마지막 공격 시간 갱신
         lastAttackTime = Time.time;
@@ -313,7 +335,7 @@ public class PlayerMovement : MonoBehaviour
             }
         }
     }
-    private IEnumerator ResetPlayerKnockback()
+    public IEnumerator ResetPlayerKnockback()
     {
         // 잠시 대기하는 동안 FixedUpdate에서 이동이 skip된다.
         yield return new WaitForSeconds(playerKnockbackDuration);

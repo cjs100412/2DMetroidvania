@@ -5,10 +5,13 @@ using Unity.Cinemachine;
 [RequireComponent(typeof(Collider2D))]
 public class GrapItem : MonoBehaviour
 {
+    [Header("아이템 고유 ID (예: Grapple)")]
+    public string itemID = "Grapple";
+
     [Header("획득 이펙트")]
     public ParticleSystem pickupEffect;
 
-    CinemachineCamera cinemachineCamera;
+    private CinemachineCamera cinemachineCamera;
 
     [Header("카메라 줌인")]
     public float zoomFactor = 0.6f;
@@ -24,8 +27,16 @@ public class GrapItem : MonoBehaviour
 
     void Awake()
     {
-        cinemachineCamera = GameObject.FindWithTag("Cinemachine").GetComponent<CinemachineCamera>();
+        // 1) 이미 획득했는지 검사
+        if (GameManager.I != null && GameManager.I.IsItemCollected(itemID))
+        {
+            Destroy(gameObject);
+            return;
+        }
 
+        // 2) 카메라 초기화
+        cinemachineCamera = GameObject.FindWithTag("Cinemachine")
+                              .GetComponent<CinemachineCamera>();
         if (cinemachineCamera != null)
             originalOrthoSize = cinemachineCamera.Lens.OrthographicSize;
         else
@@ -40,24 +51,32 @@ public class GrapItem : MonoBehaviour
         PlayerMovement player = other.GetComponent<PlayerMovement>();
         if (player != null)
         {
-            // 그랩 능력 해금
-            player.gameObject.GetComponent<GrappleLauncher>().Cangrap = true;
-            Debug.Log("Grap Ability UNLOCKED");
+            // 1) 아이템 수집 기록
+            if (GameManager.I != null)
+                GameManager.I.SetItemCollected(itemID);
 
-            // 이펙트 재생
+            // 2) 그랩 능력 언락
+            var grappleComp = player.gameObject.GetComponent<GrappleLauncher>();
+            if (grappleComp != null)
+            {
+                grappleComp.Cangrap = true;
+                Debug.Log("Grap Ability UNLOCKED");
+            }
+
+            // 3) 이펙트 재생
             if (pickupEffect != null)
                 Instantiate(pickupEffect, transform.position, Quaternion.identity);
 
-            // 아이템 비가시화 및 콜라이더 비활성화
+            // 4) 아이템 비가시화 및 콜라이더 비활성화
             col.enabled = false;
             if (spriteRenderer != null)
                 spriteRenderer.enabled = false;
 
-            // 카메라 줌 및 슬로우 모션 시작
+            // 5) 카메라 줌 & 슬로우 모션 실행
             StartCoroutine(DoCameraZoom());
             StartCoroutine(DoSlowMotion());
 
-            // 모든 효과가 끝난 후 아이템 제거
+            // 6) 모든 효과가 끝난 후 아이템 제거
             float totalDuration = zoomDuration * 2 + slowDuration + 0.1f;
             Destroy(gameObject, totalDuration);
         }
@@ -75,13 +94,14 @@ public class GrapItem : MonoBehaviour
         while (elapsed < zoomDuration)
         {
             float t = elapsed / zoomDuration;
-            cinemachineCamera.Lens.OrthographicSize = Mathf.Lerp(originalOrthoSize, targetSize, t);
+            cinemachineCamera.Lens.OrthographicSize =
+                Mathf.Lerp(originalOrthoSize, targetSize, t);
             elapsed += Time.unscaledDeltaTime;
             yield return null;
         }
         cinemachineCamera.Lens.OrthographicSize = targetSize;
 
-        // 슬로우 모션 동안 유지
+        // 슬로우 모션 유지
         yield return new WaitForSecondsRealtime(slowDuration);
 
         // 줌 아웃
@@ -89,7 +109,8 @@ public class GrapItem : MonoBehaviour
         while (elapsed < zoomDuration)
         {
             float t = elapsed / zoomDuration;
-            cinemachineCamera.Lens.OrthographicSize = Mathf.Lerp(targetSize, originalOrthoSize, t);
+            cinemachineCamera.Lens.OrthographicSize =
+                Mathf.Lerp(targetSize, originalOrthoSize, t);
             elapsed += Time.unscaledDeltaTime;
             yield return null;
         }
@@ -98,14 +119,11 @@ public class GrapItem : MonoBehaviour
 
     IEnumerator DoSlowMotion()
     {
-        // 슬로우 모션 시작
         Time.timeScale = slowTimeScale;
         Time.fixedDeltaTime = 0.02f * slowTimeScale;
 
-        // 실제 시간으로 기다림
         yield return new WaitForSecondsRealtime(slowDuration);
 
-        // 시간 복구
         Time.timeScale = 1f;
         Time.fixedDeltaTime = 0.02f;
     }

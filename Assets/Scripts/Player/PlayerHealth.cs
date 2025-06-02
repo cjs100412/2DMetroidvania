@@ -18,9 +18,11 @@ public class PlayerHealth : MonoBehaviour
     Animator animator;
 
     [Header("무적/깜박임")]
-    public float invincibleDuration = 1f;
+    public float invincibleDuration = 0.5f;
     public float deathFlashCount = 5;
     public float deathFlashInterval = 0.3f;
+
+    bool isInvincible = false;
 
     // 피격 깜박임 공통
     IEnumerator FlashCoroutine(float flashAlpha, int flashes, float interval)
@@ -49,8 +51,6 @@ public class PlayerHealth : MonoBehaviour
         transform.localScale = ls;
 
         // 3) 물리·충돌 복원
-        var col = GetComponent<Collider2D>();
-        var rb = GetComponent<Rigidbody2D>();
         col.enabled = true;
         rb.simulated = true;
         rb.linearVelocity = Vector2.zero;  // 이전 관성 제거
@@ -85,9 +85,9 @@ public class PlayerHealth : MonoBehaviour
 
     public void Damaged(int amount)
     {
-        if (isDead) return;
+        if (isDead || isInvincible) return;
         StartCoroutine(InvincibleRoutine());
-        StartCoroutine(FlashCoroutine(0.3f, 2, 0.1f));
+        StartCoroutine(FlashCoroutine(0.3f, 1, 0.1f));
 
         currentHp = Mathf.Max(currentHp - amount, 0);
         if (currentHp <= 0) Die();
@@ -95,10 +95,11 @@ public class PlayerHealth : MonoBehaviour
 
     IEnumerator InvincibleRoutine()
     {
-        bool prev = col.enabled;
+        isInvincible = true;
         col.enabled = false;
         yield return new WaitForSeconds(invincibleDuration);
-        col.enabled = prev;
+        col.enabled = true;
+        isInvincible = false;
     }
 
     void Die()
@@ -137,7 +138,7 @@ public class PlayerHealth : MonoBehaviour
             SceneLoader.NextZone = "StartScene";
             SceneLoader.NextSpawnPoint = "StartSpawn";
         }
-
+        SceneLoader.IsRespawn = true;
         SceneManager.LoadScene("Bootstrap", LoadSceneMode.Single);
         // 3) 씬 & 상태 복원
         //SceneManager.LoadScene("Bootstrap", LoadSceneMode.Single);

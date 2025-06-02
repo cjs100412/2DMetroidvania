@@ -7,7 +7,7 @@ public class AoeDropSpellPattern : ScriptableObject, IBossPattern
     [Header("Spell Settings")]
     public GameObject spellPrefab;
     public float dropHeight = 10f;
-    public float dropTime = 1f;
+    public float dropTime = 2f;
     public float explodeRadius = 3f;
     public int damage = 5;
 
@@ -38,9 +38,13 @@ public class AoeDropSpellPattern : ScriptableObject, IBossPattern
         yield return new WaitForSeconds(0.5f);
 
         // 2) 공중에서 생성
+        //Vector3 spawnPos = new Vector3(player.transform.position.x,
+        //                               boss.transform.position.y + dropHeight,
+        //                               boss.transform.position.z);
+        // 플레이어 위치에 생성
         Vector3 spawnPos = new Vector3(player.transform.position.x,
-                                       boss.transform.position.y + dropHeight,
-                                       boss.transform.position.z);
+                                       player.transform.position.y,
+                                       0);
         var go = Instantiate(spellPrefab, spawnPos, Quaternion.identity);
 
         // 3) 떨어지는 시간 대기

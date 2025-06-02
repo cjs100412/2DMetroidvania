@@ -9,4 +9,6 @@ public static class SceneLoader
 
     public static string LastCheckpointZone;
     public static string LastCheckpointSpawn;
+
+    public static bool IsRespawn = false;
 }
