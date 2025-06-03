@@ -34,7 +34,7 @@ public class HomingMissilePattern : ScriptableObject, ISpawnPattern
         lastUsedTime = Time.time;
 
         // 1) 발사 애니메이션
-        boss.Animator.SetTrigger("LaunchMissiles");
+        boss.Animator.SetTrigger("isAttack");
         yield return new WaitForSeconds(0.3f);
 
         // 2) 미사일 연속 생성

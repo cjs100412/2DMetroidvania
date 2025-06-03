@@ -4,101 +4,86 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Camera))]
 public class MinimapController : MonoBehaviour
 {
-    [Header("References")]
-    public Transform player;
-    public RawImage minimapDisplay;   // UI RawImage to show the minimap camera RenderTexture
-    public RawImage fogDisplay;       // UI RawImage for Fog of War overlay
+    public static MinimapController Instance { get; private set; }
 
-    [Header("Map Bounds (World Units)")]
-    public float mapWidth = 50f;
-    public float mapHeight = 30f;
+    [Header("References")]
+    [Tooltip("→ 씬에서 태그가 'Player'인 오브젝트의 Transform을 드래그하세요.")]
+    public Transform player;
+
+    [Tooltip("→ 미니맵용 RawImage를 드래그하세요.")]
+    public RawImage minimapDisplay;
 
     [Header("Rendering Layers")]
-    public LayerMask groundLayer;     // Ground layer to render on minimap
+    [Tooltip("→ 'Ground' 레이어가 체크된 LayerMask")]
+    public LayerMask groundLayer;
 
-    [Header("Fog of War")]
-    public int fogResolutionX = 100;
-    public int fogResolutionY = 60;
-    public Color unseenColor = new Color(0, 0, 0, 1f);   // 완전 불투명
-    public Color visitedColor = new Color(0.5f, 0.5f, 0.5f, 0.5f); // 반투명 회색
-    public Color visibleColor = new Color(0, 0, 0, 0f);   // 완전 투명
-    public int viewRadiusTiles = 5;
+    [Header("Map Bounds (World Units)")]
+    [Tooltip("→ 전체 지형 너비(월드 유닛)")]
+    public float mapWidth = 50f;
+    [Tooltip("→ 전체 지형 높이(월드 유닛)")]
+    public float mapHeight = 30f;
 
     private Camera minimapCam;
-    private Texture2D fogTexture;
-    private bool[,] visited;
+    private float mapW, mapH;
+
+    void Awake()
+    {
+        // 싱글톤 패턴
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        minimapCam = GetComponent<Camera>();
+        minimapCam.orthographic = true;
+        minimapCam.cullingMask = groundLayer;
+
+        mapW = mapWidth;
+        mapH = mapHeight;
+    }
 
     void Start()
     {
-        // Setup minimap camera
-        minimapCam = GetComponent<Camera>();
-        minimapCam.orthographic = true;
-        minimapCam.cullingMask = groundLayer; // Only render ground layer
+        // 만약 Inspector에 player가 비어 있으면 태그로 찾아본다
+        if (player == null)
+        {
+            var go = GameObject.FindWithTag("Player");
+            if (go != null) player = go.transform;
+        }
 
-        RenderTexture rt = new RenderTexture(fogResolutionX, fogResolutionY, 16);
+        // 렌더 텍스처 생성 (해상도는 예시: mapWidth×10 px, mapHeight×10 px)
+        int resX = Mathf.CeilToInt(mapWidth * 10f);
+        int resY = Mathf.CeilToInt(mapHeight * 10f);
+
+        RenderTexture rt = new RenderTexture(resX, resY, 16);
         minimapCam.targetTexture = rt;
-        minimapDisplay.texture = rt;
 
-        // Setup fog texture and overlay
-        fogTexture = new Texture2D(fogResolutionX, fogResolutionY, TextureFormat.RGBA32, false);
-        fogDisplay.texture = fogTexture;
-        Material fogMat = new Material(Shader.Find("Unlit/Transparent"));
-        fogDisplay.material = fogMat;
-
-        visited = new bool[fogResolutionX, fogResolutionY];
-
-        // Sync fog overlay RectTransform with minimap display
-        fogDisplay.rectTransform.anchorMin = minimapDisplay.rectTransform.anchorMin;
-        fogDisplay.rectTransform.anchorMax = minimapDisplay.rectTransform.anchorMax;
-        fogDisplay.rectTransform.anchoredPosition = minimapDisplay.rectTransform.anchoredPosition;
-        fogDisplay.rectTransform.sizeDelta = minimapDisplay.rectTransform.sizeDelta;
+        if (minimapDisplay != null)
+        {
+            minimapDisplay.texture = rt;
+        }
     }
 
     void LateUpdate()
     {
-        // Center minimap camera on player
+        // player가 아직 null이면 계속 찾아본다
+        if (player == null)
+        {
+            var go = GameObject.FindWithTag("Player");
+            if (go != null)
+                player = go.transform;
+            else
+                return;
+        }
+
+        // 플레이어를 따라 카메라를 이동 (z는 고정)
         Vector3 p = player.position;
         minimapCam.transform.position = new Vector3(p.x, p.y, minimapCam.transform.position.z);
-
-        UpdateFogOfWar();
-    }
-
-    void UpdateFogOfWar()
-    {
-        float scaleX = fogResolutionX / mapWidth;
-        float scaleY = fogResolutionY / mapHeight;
-
-        int px = Mathf.FloorToInt((player.position.x + mapWidth * 0.5f) * scaleX);
-        int py = Mathf.FloorToInt((player.position.y + mapHeight * 0.5f) * scaleY);
-
-        // Mark visited tiles within view radius
-        for (int dx = -viewRadiusTiles; dx <= viewRadiusTiles; dx++)
-        {
-            for (int dy = -viewRadiusTiles; dy <= viewRadiusTiles; dy++)
-            {
-                int x = px + dx;
-                int y = py + dy;
-                if (x >= 0 && x < fogResolutionX && y >= 0 && y < fogResolutionY)
-                    visited[x, y] = true;
-            }
-        }
-
-        // Redraw fog texture
-        for (int x = 0; x < fogResolutionX; x++)
-        {
-            for (int y = 0; y < fogResolutionY; y++)
-            {
-                Color c;
-                if (!visited[x, y])
-                    c = unseenColor;
-                else if (Mathf.Abs(x - px) <= viewRadiusTiles && Mathf.Abs(y - py) <= viewRadiusTiles)
-                    c = visibleColor;
-                else
-                    c = visitedColor;
-
-                fogTexture.SetPixel(x, y, c);
-            }
-        }
-        fogTexture.Apply();
     }
 }

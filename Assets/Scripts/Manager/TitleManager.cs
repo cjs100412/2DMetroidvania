@@ -9,6 +9,14 @@ public class TitleManager : MonoBehaviour
     public GameObject ExitKeyMenu;
     public GameObject OptionKeyMenu;
 
+    private void Start()
+    {
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlayBGM(BGM.Title);
+        }
+    }
+
     public void OnStartButtonEnter()
     {
         SceneManager.LoadScene("Bootstrap");

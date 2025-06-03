@@ -18,6 +18,7 @@ public class LastBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
     private BossController bossController;
     private Transform player;
     private PlayerHealth playerHealth;
+    private Animator animator;
 
     [Header("카메라 줌인")]
     public float zoomFactor = 0.6f;
@@ -71,6 +72,7 @@ public class LastBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
             Debug.LogError($"[{name}] Awake(): \"Player\" 태그 오브젝트를 찾을 수 없습니다.");
         }
 
+        animator = GetComponent<Animator>();
         // 3) 나머지 컴포넌트 캐싱
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer == null)
@@ -158,6 +160,10 @@ public class LastBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
             dir = (wanderTarget - (Vector2)transform.position).normalized;
         }
 
+        float speed = Mathf.Abs(rb.linearVelocity.x);
+        // 부드러운 파라미터 변화: SetFloat(name, value, dampTime, deltaTime)
+        animator.SetFloat("Speed", speed);
+
         // Y축 이동을 0으로 고정하고, X축으로만 이동
         dir.y = 0;
         rb.linearVelocity = dir * moveSpeed;
@@ -194,7 +200,7 @@ public class LastBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
     {
         if (isDead) return;
         isDead = true;
-
+        animator.SetTrigger("isDead");
         if (GameManager.I != null)
         {
             GameManager.I.SetBossDefeated(bossID);

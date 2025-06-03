@@ -34,6 +34,10 @@ public class GoldItem : MonoBehaviour
 
             playerInventory.AddCoins(50);
 
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFX.Gold);
+            }
 
             // 이펙트 재생
             if (pickupEffect != null)

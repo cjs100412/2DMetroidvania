@@ -34,7 +34,7 @@ public class AoeDropSpellPattern : ScriptableObject, IBossPattern
         lastUsedTime = Time.time;
 
         // 1) 준비 애니메이션
-        boss.Animator.SetTrigger("DropSpell");
+        boss.Animator.SetTrigger("isAttack");
         yield return new WaitForSeconds(0.5f);
 
         // 2) 공중에서 생성

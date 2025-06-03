@@ -20,7 +20,7 @@ public class GameBootstrap : MonoBehaviour
         {
             yield return SceneManager.LoadSceneAsync(persistentSceneName, LoadSceneMode.Additive);
         }
-
+        yield return null;
         // 2) 이전 Zone 언로드 (빈 값 아닐 때)
         if (!string.IsNullOrEmpty(SceneLoader.CurrentZone))
         {
@@ -38,7 +38,7 @@ public class GameBootstrap : MonoBehaviour
         string nextSpawn = string.IsNullOrEmpty(SceneLoader.NextSpawnPoint)
             ? initialSpawnPointName
             : SceneLoader.NextSpawnPoint;
-
+        yield return null;
         // 4) 새 Zone 로드 & 스폰
         yield return LoadNewZone(nextZone, nextSpawn);
 
@@ -106,30 +106,17 @@ public class GameBootstrap : MonoBehaviour
                 Debug.LogWarning($"SpawnPoint[{spawnPointName}] 못 찾음. 위치 복원 스킵.");
             }
         }
-        var brain = Camera.main.GetComponent<CinemachineBrain>();
-        if (brain != null)
+        yield return null;
+
+        // ☆ ScreenFader.Instance가 확실히 존재할 때만 FadeIn
+        if (ScreenFader.Instance != null)
         {
-            Debug.Log("블렌딩");
-            // 원래 블렌딩 세팅 백업
-            var backupBlend = brain.DefaultBlend;
-            // 컷 전환(블렌딩 시간 0초)
-            brain.DefaultBlend = new CinemachineBlendDefinition(CinemachineBlendDefinition.Styles.Cut, 0f);
-
-            // 씬 내에 있는 첫 번째 Virtual Camera를 찾아 Follow/LookAt을 플레이어로 지정
-            var vcam = FindFirstObjectByType<CinemachineVirtualCameraBase>();
-            if (vcam != null && player != null)
-            {
-                Debug.Log("if구문에 들어옴");
-                vcam.Priority = 100;
-                vcam.Follow = player.transform;
-                vcam.LookAt = player.transform;
-            }
-
-            // 한 프레임 대기 → 컷 전환 적용
+            yield return ScreenFader.Instance.FadeIn();
+        }
+        else
+        {
+            // Instance가 없으면 그냥 한 프레임 쉬고 넘어가기
             yield return null;
-
-            // 블렌딩 설정 원복
-            brain.DefaultBlend = backupBlend;
         }
 
     }
