@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: HomingMissilePattern
   m_EditorClassIdentifier: 
   missilePrefab: {fileID: 8163343930501831133, guid: 731dd5f7ed544c2419edd2b5b9ed404b, type: 3}
-  missileSpeed: 14
+  missileSpeed: 10
   turnSpeed: 200
   missileCount: 5
   spawnInterval: 0.2
   minDistance: 10
   maxDistance: 50
-  cooldown: 3
+  cooldown: 8

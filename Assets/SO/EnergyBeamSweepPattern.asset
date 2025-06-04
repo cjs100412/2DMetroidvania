@@ -17,4 +17,4 @@ MonoBehaviour:
   sweepDuration: 2
   minDistance: 0
   maxDistance: 50
-  cooldown: 5
+  cooldown: 7

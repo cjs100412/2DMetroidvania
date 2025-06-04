@@ -15,12 +15,6 @@ public class GameBootstrap : MonoBehaviour
 
     private IEnumerator Start()
     {
-        if (GameManager.I != null && GameManager.I.HasSave)
-        {
-            GameManager.I.LoadGame();
-            yield break;
-        }
-
         // Persistent 씬은 한 번만 불러오기
         if(GameManager.I == null)
         {

@@ -93,21 +93,21 @@ public class PlayerMovement : MonoBehaviour
         // ─── 상점 구매 정보 확인 & 스탯 보정 ───
         if (GameManager.I != null)
         {
-            // 공격력 상승 (+10)
+            // 공격력 상승
             if (GameManager.I.IsBoughtAttackPower() && !appliedPowerUpgrade)
             {
-                damage += 10;
+                damage += 5;
                 appliedPowerUpgrade = true;
             }
 
-            // 공격 범위 상승 (+1.5)
+            // 공격 범위 상승
             if (GameManager.I.IsBoughtAttackRange() && !appliedRangeUpgrade)
             {
                 attackRadius += 1.5f;
                 appliedRangeUpgrade = true;
             }
 
-            // 공격 속도 상승 (쿨타임 -0.2, 최소 0.1초 보장)
+            // 공격 속도 상승
             if (GameManager.I.IsBoughtAttackSpeed() && !appliedSpeedUpgrade)
             {
                 attackCooldown = Mathf.Max(0.1f, attackCooldown - 0.2f);

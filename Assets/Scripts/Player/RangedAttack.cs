@@ -8,10 +8,10 @@ public class RangedAttack : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        // 1) 충돌한 오브젝트가 Enemy 레이어인지 체크
+        // 충돌한 오브젝트가 Enemy 레이어인지 체크
         if (((1 << other.gameObject.layer) & enemyLayer) != 0)
         {
-            // 2) Enemy 컴포넌트가 있으면 Damaged 호출
+            // Enemy 컴포넌트가 있으면 Damaged 호출
             var enemy = other.GetComponent<Enemy>();
             if (enemy != null)
                 enemy.Damaged(damage);
@@ -24,8 +24,7 @@ public class RangedAttack : MonoBehaviour
             if (doubleJumpBoss != null)
                 doubleJumpBoss.Damaged(damage);
         }
-
-        // 3) 투사체 파괴
+        // 투사체 파괴
         Destroy(gameObject);
     }
 }

@@ -64,7 +64,7 @@ public class GrappleLauncher : MonoBehaviour
     {
         if (!isAttached) return;
 
-        // 1) 플레이어가 눌러놓은 방향키 가져오기 (8방향)
+        // 플레이어가 눌러놓은 방향키 가져오기 (8방향)
         Vector2 inputDir = new Vector2(
             Input.GetAxisRaw("Horizontal"),
             Input.GetAxisRaw("Vertical")
@@ -72,7 +72,7 @@ public class GrappleLauncher : MonoBehaviour
 
         Vector2 launchDir;
 
-        // 2) 입력이 있으면 그 방향, 없으면 원래 로프 방향(pullDir) 사용
+        // 입력이 있으면 그 방향, 없으면 원래 로프 방향(pullDir) 사용
         if (inputDir.sqrMagnitude > 0.01f)
         {
             launchDir = inputDir.normalized;
@@ -84,11 +84,11 @@ public class GrappleLauncher : MonoBehaviour
             launchDir = pullDir;
         }
 
-        // 3) 대상에도 같은 방향(launchDir)으로 Impulse
+        // 대상에도 같은 방향(launchDir)으로 Impulse
         grabbedRb.AddForce(launchDir * launchForce,
                             ForceMode2D.Impulse);
 
-        // 4) 플레이어는 반대 방향(-launchDir)으로 Impulse
+        // 플레이어는 반대 방향(-launchDir)으로 Impulse
         rbPlayer.AddForce(-launchDir * playerLaunchForce,
                            ForceMode2D.Impulse);
 
@@ -96,7 +96,7 @@ public class GrappleLauncher : MonoBehaviour
         var pm = GetComponent<PlayerMovement>();
         pm?.LockHorizontal();
 
-        // 5) Joint 해제
+        // Joint 해제
         joint.enabled = false;
         joint.connectedBody = null;
         grabbedRb = null;

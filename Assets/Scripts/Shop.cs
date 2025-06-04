@@ -61,7 +61,7 @@ public class Shop : MonoBehaviour
 
             // 가격과 설명 설정
             if (costTextAttackPower != null) costTextAttackPower.text = costAttackPower + " 코인";
-            if (descTextAttackPower != null) descTextAttackPower.text = "공격력 + 3";
+            if (descTextAttackPower != null) descTextAttackPower.text = "공격력 + 5";
         }
 
         if (panelAttackRange != null)

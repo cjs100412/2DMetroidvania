@@ -977,13 +977,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2110514767068396290, guid: 31d68424c0030b94bb2f064d790f67cd, type: 3}
+      propertyPath: m_Size.y
+      value: 6.5908413
+      objectReference: {fileID: 0}
+    - target: {fileID: 2110514767068396290, guid: 31d68424c0030b94bb2f064d790f67cd, type: 3}
+      propertyPath: m_Offset.y
+      value: 3.2385807
+      objectReference: {fileID: 0}
     - target: {fileID: 4069010376936305679, guid: 31d68424c0030b94bb2f064d790f67cd, type: 3}
       propertyPath: m_LocalPosition.x
       value: 595.4
       objectReference: {fileID: 0}
     - target: {fileID: 4069010376936305679, guid: 31d68424c0030b94bb2f064d790f67cd, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2.02
+      value: -1.72
       objectReference: {fileID: 0}
     - target: {fileID: 4069010376936305679, guid: 31d68424c0030b94bb2f064d790f67cd, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1024,6 +1032,10 @@ PrefabInstance:
     - target: {fileID: 7285715039835660701, guid: 31d68424c0030b94bb2f064d790f67cd, type: 3}
       propertyPath: m_Name
       value: ZoneBCheckPoint
+      objectReference: {fileID: 0}
+    - target: {fileID: 8220673428305860793, guid: 31d68424c0030b94bb2f064d790f67cd, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.22
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

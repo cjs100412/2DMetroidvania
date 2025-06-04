@@ -131,9 +131,13 @@ PrefabInstance:
       propertyPath: m_Name
       value: GoldItem
       objectReference: {fileID: 0}
+    - target: {fileID: 1418572232392708494, guid: f0d4d9382f5870640aa13e541ef63161, type: 3}
+      propertyPath: itemID
+      value: Gold_Dash_1
+      objectReference: {fileID: 0}
     - target: {fileID: 1558158343682533379, guid: f0d4d9382f5870640aa13e541ef63161, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 771.3248
+      value: 769.52
       objectReference: {fileID: 0}
     - target: {fileID: 1558158343682533379, guid: f0d4d9382f5870640aa13e541ef63161, type: 3}
       propertyPath: m_LocalPosition.y
