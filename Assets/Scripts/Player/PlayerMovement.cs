@@ -20,8 +20,8 @@ public class PlayerMovement : MonoBehaviour
     public LayerMask groundLayer;
 
     [Header("공격력, 공격 쿨타임")]
-    public int damage = 3;
-    public float attackCooldown = 2f;
+    public int damage = 5;
+    public float attackCooldown = 0.5f;
 
     [Header("공격 판정 위치")]
     public Transform attackPoint;
@@ -387,7 +387,7 @@ public class PlayerMovement : MonoBehaviour
         if (GameManager.I == null) return;
         if (GameManager.I.IsBoughtAttackPower() && !appliedPowerUpgrade)
         {
-            damage += 3;
+            damage += 5;
             appliedPowerUpgrade = true;
         }
         if (GameManager.I.IsBoughtAttackRange() && !appliedRangeUpgrade)
