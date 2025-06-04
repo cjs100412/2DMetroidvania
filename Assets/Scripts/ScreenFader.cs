@@ -32,10 +32,12 @@ public class ScreenFader : MonoBehaviour
             fadeImage.color = new Color(0, 0, 0, alpha);
             yield return null;
         }
+        gameObject.SetActive(false);
     }
 
     public IEnumerator FadeIn()
     {
+        gameObject.SetActive(true);
         float t = 0f;
         while (t < fadeDuration)
         {

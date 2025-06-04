@@ -64,7 +64,10 @@ public class FarRangeProjectilePattern : ScriptableObject, ISpawnPattern
         Vector3 spawnPos = spawnPoint.position;
         Quaternion spawnRot = spawnPoint.rotation;
         var proj = Instantiate(projectilePrefab, spawnPos, spawnRot);
-
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.FarRange);
+        }
         // (3) Rigidbody2D.velocity로 발사
         var rb = proj.GetComponent<Rigidbody2D>();
         if (rb != null)

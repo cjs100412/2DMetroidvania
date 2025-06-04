@@ -62,6 +62,10 @@ public class JumpAttackPattern : ScriptableObject, IBossPattern
 
         // 1) 점프 애니메이션
         boss.Animator.SetTrigger("Jump");
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.JumpAttack);
+        }
         yield return new WaitForSeconds(0.1f);
 
         // 2) 점프 실행
@@ -102,6 +106,10 @@ public class JumpAttackPattern : ScriptableObject, IBossPattern
             // 실제 착지까지 대기
             do { yield return null; }
             while (Physics2D.OverlapCircle((Vector2)boss.transform.position + groundCheckOffset, groundCheckRadius, groundLayer) == null);
+        }
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.JumpAttack);
         }
 
         // 4) 착지 순간 데미지

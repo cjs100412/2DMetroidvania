@@ -5,20 +5,24 @@ using UnityEngine.Audio;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems; // EventTrigger를 사용하기 위해 필요
 
-//1. 사운드 구분을 위한 enum을 설계합니다.
-public enum SOUND_TYPE //유형만 나눈 enum
+// 1. 사운드 구분을 위한 enum을 설계합니다.
+public enum SOUND_TYPE
 {
     BGM, SFX
 }
-//세부적으로 나누는 enum (이 프로젝트에서는 이거 사용)
+
+// 세부적으로 나누는 enum (이 프로젝트에서는 이거 사용)
 public enum BGM
 {
-    Title, InGame, Boss, Shop, GameClear
+    Title, InGame, Boss, Shop, GameClear, LastBoss
 }
+
 public enum SFX
 {
-    Attack, Gold
+    Attack, Gold, Run, UpgradeAttack, UIPopup, UIExit, GameStart, EnemyDead, EnemyDamaged, BossDamaged,
+    GrappleBossDead ,LastBossDead, CheckPoint, Portal, RangeAttack, AoeExplosion, JumpAttack, FarRange, PullAndSpray, Beam, Item, Hiddenplace
 }
 
 [Serializable]
@@ -35,13 +39,12 @@ public class SFXClip
     public AudioClip clip;
 }
 
-
 public class SoundManager : MonoBehaviour
 {
-    //2. 클래스에 필요한 필드 값 설계
+    // 2. 클래스에 필요한 필드 값 설계
     [Header("오디오 믹서")]
     public AudioMixer audioMixer;
-    public string bgmParameter = "BGM"; //오디오 믹서에 만들어둔 이름
+    public string bgmParameter = "BGM"; // 오디오 믹서에 만들어둔 이름
     public string sfxParameter = "SFX";
 
     [Header("오디오 소스")]
@@ -52,20 +55,19 @@ public class SoundManager : MonoBehaviour
     public List<BGMClip> bgm_list;
     public List<SFXClip> sfx_list;
 
-    private Dictionary<BGM, AudioClip> bgm_dict; //BGM 유형에 따른 오디오 클립
-    private Dictionary<SFX, AudioClip> sfx_dict; //SFX 유형에 따른 오디오 클라 
+    private Dictionary<BGM, AudioClip> bgm_dict; // BGM 유형에 따른 오디오 클립
+    private Dictionary<SFX, AudioClip> sfx_dict; // SFX 유형에 따른 오디오 클립
 
     private float bgm_value;
     private float sfx_value;
 
+    [Header("UI 슬라이더 & 토글")]
     public Slider bgm_slider;
     public Slider sfx_slider;
-
     public Toggle bgm_toggle;
     public Toggle sfx_toggle;
 
-    //3. 사운드 매니저는 전체 게임에서 1개만 필요하다.(싱글톤)
-    //프로퍼티 형태로 만들어보는 인스턴스
+    // 3. 사운드 매니저는 전체 게임에서 1개만 필요하다.(싱글톤)
     public static SoundManager Instance { get; private set; }
 
     private void Awake()
@@ -75,19 +77,21 @@ public class SoundManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            //딕셔너리 생성
+            // 딕셔너리 생성
             bgm_dict = new Dictionary<BGM, AudioClip>();
             sfx_dict = new Dictionary<SFX, AudioClip>();
 
-            //유형 별로 등록(BGM)
-            foreach (var bgm in bgm_list)
+            // 유형 별로 등록(BGM)
+            foreach (var bgmItem in bgm_list)
             {
-                bgm_dict[bgm.type] = bgm.clip;
+                if (!bgm_dict.ContainsKey(bgmItem.type))
+                    bgm_dict[bgmItem.type] = bgmItem.clip;
             }
-            //유형 별로 등록(SFX)
-            foreach (var sfx in sfx_list)
+            // 유형 별로 등록(SFX)
+            foreach (var sfxItem in sfx_list)
             {
-                sfx_dict[sfx.type] = sfx.clip;
+                if (!sfx_dict.ContainsKey(sfxItem.type))
+                    sfx_dict[sfxItem.type] = sfxItem.clip;
             }
         }
         else
@@ -95,6 +99,7 @@ public class SoundManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
     private void OnEnable()
     {
         // 씬이 로드될 때마다 OnSceneLoaded 호출
@@ -108,10 +113,33 @@ public class SoundManager : MonoBehaviour
 
     private void Start()
     {
-        bgm_value = Mathf.Log10(bgm_slider.value) * 20;
-        audioMixer.SetFloat(bgmParameter, bgm_value);
-        sfx_value = Mathf.Log10(sfx_slider.value) * 20;
-        audioMixer.SetFloat(sfxParameter, sfx_value);
+        // 1) 시작 시 슬라이더가 Inspector에 설정된 값(보통 0.0001 ~ 1)을 읽어서 믹서 볼륨으로 세팅
+        if (bgm_slider != null)
+        {
+            bgm_value = Mathf.Log10(Mathf.Max(bgm_slider.value, 0.0001f)) * 20f;
+            audioMixer.SetFloat(bgmParameter, bgm_value);
+            // BGM 슬라이더 값이 바뀔 때마다 SetBGMVolume이 호출되도록 연결
+            bgm_slider.onValueChanged.AddListener(SetBGMVolume);
+        }
+
+        if (sfx_slider != null)
+        {
+            sfx_value = Mathf.Log10(Mathf.Max(sfx_slider.value, 0.0001f)) * 20f;
+            audioMixer.SetFloat(sfxParameter, sfx_value);
+            // SFX 슬라이더 값이 바뀔 때마다 SetSFXVolume이 호출되도록 연결
+            sfx_slider.onValueChanged.AddListener(SetSFXVolume);
+
+            // 2) sfx_slider에 Pointer Up 이벤트(마우스 떼는 순간)를 걸어서
+            //    그때 공격 효과음을 한 번만 재생하도록 설정
+            AttachPointerUpEventToSlider(sfx_slider, () =>
+            {
+                // 마우스 버튼을 떼는 순간 호출될 콜백
+                if (SoundManager.Instance != null)
+                {
+                    SoundManager.Instance.PlaySFX(SFX.Attack);
+                }
+            });
+        }
     }
 
     // 씬이 로드될 때 호출되는 콜백
@@ -130,6 +158,9 @@ public class SoundManager : MonoBehaviour
                 break;
 
             case "BossScene":
+                PlayBGM(BGM.LastBoss);
+                break;
+
             case "DashBossScene":
             case "DoubleJumpBossScene":
             case "GrappleBossScene":
@@ -150,73 +181,95 @@ public class SoundManager : MonoBehaviour
         }
     }
 
-    //1. UI의 BGM, SFX 트는 기능 구현
-
-    //2. UI의 Slider의 onValueChanged 이벤트 쪽에서 적용할 함수 구현
+    // BGM 재생
     public void PlayBGM(BGM bgm_type)
     {
-        //bgm 딕셔너리 명단에 해당 BGM이 존재한다면 플레이를 진행합니다.
-        //C# 매개변수 한정자 out
-        //타입 앞에 붙습니다. ex) void Function(out int value);
-        //out 한정자가 붙은 매개변수는 참조로 전달이 됩니다.
-        //함수 내부에서 무조건 적으로 값을 설정해줘야 합니다.
         if (bgm_dict.TryGetValue(bgm_type, out var clip))
         {
-            //지금 클립이 동일하다면, 배경음악이 틀어지고 있다라고 해석할 수 있음.
+            // 이미 같은 클립을 틀고 있으면 리턴
             if (bgm.clip == clip)
-            {
                 return;
-            }
+
             bgm.clip = clip;
             bgm.loop = true;
             bgm.Play();
         }
     }
 
+    // SFX 재생
     public void PlaySFX(SFX sfx_type)
     {
-        //sfx 딕셔너리 명단에 해당 SFX가 존재한다면 bgm을 1번 실행합니다.
         if (sfx_dict.TryGetValue(sfx_type, out var clip))
         {
-            //효과음은 일시적인 플레이를 진행합니다.
             sfx.PlayOneShot(clip);
         }
     }
 
-    //Audio Mixer의 볼륨 단위는 0 db ~ - 80 d까지로 설정되어있습니다.
+    // 2. UI의 Slider의 onValueChanged 이벤트 쪽에서 적용할 함수 구현
+    // Audio Mixer의 볼륨 단위는 0 db ~ -80 db까지(0.0001 ~ 1 영역에 매핑)로 설정되어 있습니다.
     public void SetBGMVolume(float volume)
     {
-        bgm_toggle.isOn = true;
-        bgm_value = Mathf.Log10(volume) * 20;
+        // 토글을 꺼둔 상태로 강제 변경
+        if (bgm_toggle != null) bgm_toggle.isOn = false;
+
+        // volume이 0이면 음소거(-80db)로 클램프
+        float v = Mathf.Max(volume, 0.0001f);
+        bgm_value = Mathf.Log10(v) * 20f;
         audioMixer.SetFloat(bgmParameter, bgm_value);
-        //슬라이더 UI 최소 값이 0.0001로 해당 수치로 계산하면 -80
-        //최대 값 1인 경우 0으로 계산됩니다.
     }
 
     public void SetSFXVolume(float volume)
     {
-        sfx_toggle.isOn = true;
-        sfx_value = Mathf.Log10(volume) * 20;
+        // 토글을 꺼둔 상태로 강제 변경
+        if (sfx_toggle != null) sfx_toggle.isOn = false;
+
+        // volume이 0이면 음소거(-80db)로 클램프
+        float v = Mathf.Max(volume, 0.0001f);
+        sfx_value = Mathf.Log10(v) * 20f;
         audioMixer.SetFloat(sfxParameter, sfx_value);
+
+        // → Input.GetMouseButtonUp(0) 로 체크하지 않음.
+        //    대신 슬라이더 자체의 PointerUp 이벤트에서 PlaySFX을 호출합니다.
     }
 
-    //누르면 무음이 되는 MuteBGM과 MuteSFX를 구현해주세요.
-    //힌트 : -80 수치가 mute
-    //UI 중에서는 Toggle
+    // Mute 기능: toggle의 체크 상태에 따라 0dB 혹은 -80dB (사실상 음소거) 설정
     public void MuteBGM(bool mute)
     {
-        //Toggle 키를 체크했다는 전제로 짠 코드
-        //삼항 연산
-        //조건 ? T : F 로 작성되며 조건이 맞으면 T에 있는 값을, 아니면 F에 있는 값을 처리합니다.
-        audioMixer.SetFloat(bgmParameter, mute ? bgm_value : -80.0f);
+        audioMixer.SetFloat(bgmParameter, mute ? -80f : bgm_value);
     }
 
     public void MuteSFX(bool mute)
     {
-        //Toggle 키를 체크했다는 전제로 짠 코드
-        //삼항 연산
-        //조건 ? T : F 로 작성되며 조건이 맞으면 T에 있는 값을, 아니면 F에 있는 값을 처리합니다.
-        audioMixer.SetFloat(sfxParameter, mute ? sfx_value : -80.0f);
+        audioMixer.SetFloat(sfxParameter, mute ? -80f : sfx_value);
     }
 
+    // ---------------------------------------------------------------------------------
+    // 슬라이더(GameObject)에 EventTrigger를 붙이고, PointerUp 이벤트를 추가하는 헬퍼 메서드
+    private void AttachPointerUpEventToSlider(Slider slider, Action onPointerUpCallback)
+    {
+        if (slider == null || onPointerUpCallback == null)
+            return;
+
+        // 1) Slider GameObject에 EventTrigger 컴포넌트가 있는지 확인하고, 없으면 추가
+        EventTrigger trigger = slider.GetComponent<EventTrigger>();
+        if (trigger == null)
+        {
+            trigger = slider.gameObject.AddComponent<EventTrigger>();
+        }
+
+        // 2) PointerUp용 Entry를 생성
+        var entry = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerUp
+        };
+
+        // 3) 이벤트가 발생했을 때 호출될 콜백 등록
+        entry.callback.AddListener((data) =>
+        {
+            onPointerUpCallback.Invoke();
+        });
+
+        // 4) 트리거 리스트에 추가
+        trigger.triggers.Add(entry);
+    }
 }

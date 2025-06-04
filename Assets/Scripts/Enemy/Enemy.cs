@@ -244,6 +244,10 @@ public class Enemy : MonoBehaviour
         if(isDead) return;
         hp -= amount;
         StartCoroutine(RedFlash());
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.EnemyDamaged);
+        }
         animator.SetTrigger("isDamaged");
         if (playerTransform != null && rb != null)
         {
@@ -278,6 +282,11 @@ public class Enemy : MonoBehaviour
         isDead = true;
         if (playerHealth.currentMp < 5)
             playerHealth.currentMp++;
+
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.EnemyDead);
+        }
 
         animator.SetTrigger("isDead");
         playerInventory.AddCoins(5);

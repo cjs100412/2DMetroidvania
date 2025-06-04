@@ -798,7 +798,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uC774\uB3D9 : \uBC29\uD5A5\uD0A4\n\n\uC810\uD504 : SPACE\n\n\uACF5\uACA9
     : Z\n\n\uB300\uC26C : X\n\n\uC6D0\uAC70\uB9AC \uACF5\uACA9 : LeftCtrl\n\n\uAC08\uACE0\uB9AC\uC561\uC158
-    : C"
+    : C\n\n\uC0C1\uC810 \uC0C1\uD638\uC791\uC6A9 : F"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: d49b1cb43b782f7459e0803df055c569, type: 2}
   m_sharedMaterial: {fileID: -7708899350592715866, guid: d49b1cb43b782f7459e0803df055c569, type: 2}
@@ -973,7 +973,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  m_IsOn: 1
+  m_IsOn: 0
 --- !u!1 &295114911
 GameObject:
   m_ObjectHideFlags: 0
@@ -1123,7 +1123,7 @@ AudioSource:
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -4442,7 +4442,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  m_IsOn: 1
+  m_IsOn: 0
 --- !u!224 &1765407623
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4768,14 +4768,62 @@ MonoBehaviour:
   sfx: {fileID: 702438437}
   bgm_list:
   - type: 0
-    clip: {fileID: 8300000, guid: d4ac95c3f996484439e5d69a072969fc, type: 3}
+    clip: {fileID: 8300000, guid: 460087f33677e514296a7f116a9ad6a6, type: 3}
   - type: 1
-    clip: {fileID: 8300000, guid: a485b68a29df2e149be0e6f2a835b124, type: 3}
+    clip: {fileID: 8300000, guid: 50d08c7330c9e6449b093e9d9ee694f6, type: 3}
+  - type: 2
+    clip: {fileID: 8300000, guid: 44f6f404e4b8fe448b45c96e3d2517b3, type: 3}
+  - type: 3
+    clip: {fileID: 8300000, guid: 8a17a3691d77fc4479b0650efed2c528, type: 3}
+  - type: 4
+    clip: {fileID: 8300000, guid: 58c36656803ebbe4f975ba2abe10a219, type: 3}
+  - type: 5
+    clip: {fileID: 8300000, guid: 0363ad6550bdf6a4a8cac9e2c9ce4bf6, type: 3}
   sfx_list:
   - type: 1
-    clip: {fileID: 8300000, guid: 7e2f1b20df8e63c43b2870251a7b0ebc, type: 3}
+    clip: {fileID: 8300000, guid: 5d97b0dec24c7dc4e9f320c971c44ce5, type: 3}
   - type: 0
+    clip: {fileID: 8300000, guid: 6a8e5fab89741714dac10ccb7679423a, type: 3}
+  - type: 2
+    clip: {fileID: 8300000, guid: cb186425ed64c6e49921b9c8b997c094, type: 3}
+  - type: 3
+    clip: {fileID: 8300000, guid: 35061a8df60286f4786678d3ef56d0e9, type: 3}
+  - type: 4
+    clip: {fileID: 8300000, guid: 2a25c4a7ab0178f4ba53568ed505b2be, type: 3}
+  - type: 5
+    clip: {fileID: 8300000, guid: 43041e6f01674ab47aa09f659e87978f, type: 3}
+  - type: 6
+    clip: {fileID: 8300000, guid: 1e2a7237fd1ea894e971bd3bd333b89b, type: 3}
+  - type: 7
+    clip: {fileID: 8300000, guid: feb9abc1b4301614dbbb58db3ce519bf, type: 3}
+  - type: 8
+    clip: {fileID: 8300000, guid: 4a73ce153593451408e0fc87b8fe4ffe, type: 3}
+  - type: 9
+    clip: {fileID: 8300000, guid: 2d8294ed7e32a2f4c8ca19df80ed41c3, type: 3}
+  - type: 10
+    clip: {fileID: 8300000, guid: 00cdee1036b832340ac8444b3e80f4a0, type: 3}
+  - type: 11
+    clip: {fileID: 8300000, guid: 1e399d7e981a6174b9c73079bd885e01, type: 3}
+  - type: 12
+    clip: {fileID: 8300000, guid: a2637e467bac52b40b1f10142dcbb938, type: 3}
+  - type: 13
+    clip: {fileID: 8300000, guid: ac99f3ab049ae9f4f888287e903c683e, type: 3}
+  - type: 14
+    clip: {fileID: 8300000, guid: b21334421932a0b439eec23aab09bf68, type: 3}
+  - type: 15
+    clip: {fileID: 8300000, guid: 7d9dbf652098d1a40bdb75c2ee887c32, type: 3}
+  - type: 16
+    clip: {fileID: 8300000, guid: b27e07c763a20574084eb3dcdceac6a2, type: 3}
+  - type: 17
+    clip: {fileID: 8300000, guid: 634833ea545059c46bcd1bb4dd05676b, type: 3}
+  - type: 18
+    clip: {fileID: 8300000, guid: 64361108be065834fb5106e02589508c, type: 3}
+  - type: 19
+    clip: {fileID: 8300000, guid: 9b4f10aee7443a14ea9a40dc48303e7e, type: 3}
+  - type: 20
     clip: {fileID: 8300000, guid: 7e2f1b20df8e63c43b2870251a7b0ebc, type: 3}
+  - type: 21
+    clip: {fileID: 8300000, guid: 116f1c0d6280e2640b4020a785bca0c8, type: 3}
   bgm_slider: {fileID: 1147595102}
   sfx_slider: {fileID: 1007426643}
   bgm_toggle: {fileID: 284543169}

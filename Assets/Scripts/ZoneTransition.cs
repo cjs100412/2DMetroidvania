@@ -11,7 +11,10 @@ public class ZoneTransition : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag("Player")) return;
-
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.Portal);
+        }
         // 다음에 로드할 씬/스폰위치 지정
         SceneLoader.NextZone = targetZoneScene;
         SceneLoader.NextSpawnPoint = spawnPointName;

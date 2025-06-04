@@ -61,7 +61,10 @@ public class DoubleJumpItem : MonoBehaviour
             // 3) 이펙트 재생
             if (pickupEffect != null)
                 Instantiate(pickupEffect, transform.position, Quaternion.identity);
-
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFX.Item);
+            }
             // 4) 아이템 비가시화 및 콜라이더 비활성화
             col.enabled = false;
             if (spriteRenderer != null)

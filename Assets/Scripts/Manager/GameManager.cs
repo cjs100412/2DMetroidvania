@@ -32,6 +32,9 @@ public class GameManager : MonoBehaviour
     public static GameManager I { get; private set; }
     string savePath;
     PlayerData data;
+
+    public bool HasSave { get; private set; }
+
     public int SavedHp => data.hp;
     public int SavedMp => data.mp;
     public int SavedCoins => data.coins;
@@ -45,15 +48,18 @@ public class GameManager : MonoBehaviour
         savePath = Path.Combine(Application.persistentDataPath, "save.json");
         data = new PlayerData();
 
-        //에디터에선 테스트용으로 삭제하지않는다
-#if UNITY_EDITOR
-        if (File.Exists(savePath))
-            File.Delete(savePath);
-#endif
+        //에디터에선 테스트용으로 매번 삭제한다
+        //#if UNITY_EDITOR
+        //        if (File.Exists(savePath))
+        //            File.Delete(savePath);
+        //#endif
 
-        if (File.Exists(savePath))
+        File.Delete(savePath);// 매번 삭제
+
+        HasSave = File.Exists(savePath);
+        if (HasSave)
         {
-            // 기존 파일이 있으면 _삭제하지 않고_ 로드만 한다
+            // 기존 파일이 있으면 삭제하지 않고 로드만 한다
             string json = File.ReadAllText(savePath);
             data = JsonUtility.FromJson<PlayerData>(json);
 
@@ -87,6 +93,7 @@ public class GameManager : MonoBehaviour
         string json = JsonUtility.ToJson(data, true);
         File.WriteAllText(savePath, json);
         Debug.Log($"[GameManager] Save initialized: {savePath}");
+        HasSave = false;
     }
 
     public void SaveGame(Vector2 pos, int hp, int mp, int coins)
@@ -101,6 +108,8 @@ public class GameManager : MonoBehaviour
         string json = JsonUtility.ToJson(data);
         File.WriteAllText(savePath, json);
         Debug.Log("Game Saved → " + savePath + " (Scene: " + data.sceneName + ")");
+
+        HasSave = true;
     }
 
     public void LoadGame()

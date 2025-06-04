@@ -170,7 +170,10 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
         if (isDead) return;
         hp -= amount;
         StartCoroutine(RedFlash());
-
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.BossDamaged);
+        }
         if (hp <= 0)
             Die();
     }
@@ -190,6 +193,10 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
     {
         if (isDead) return;
         isDead = true;
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.GrappleBossDead);
+        }
         animator.SetTrigger("isDead");
         if (GameManager.I != null)
         {

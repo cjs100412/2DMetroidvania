@@ -48,7 +48,10 @@ public class Checkpoint : MonoBehaviour
             health.currentMp,
             inv.CoinCount
         );
-
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.CheckPoint);
+        }
         Debug.Log($"[Checkpoint] Saved zone={zone}, spawn={spawnPointName}");
 
         // 3) 텍스트 페이드 인/아웃 코루틴 실행

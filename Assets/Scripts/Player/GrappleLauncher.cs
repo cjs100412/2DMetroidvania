@@ -16,11 +16,12 @@ public class GrappleLauncher : MonoBehaviour
     Rigidbody2D grabbedRb;
     public bool isAttached;
     public bool Cangrap = false;
+    private PlayerMovement playerMovement;
 
     void Awake()
     {
         rbPlayer = GetComponent<Rigidbody2D>();
-
+        playerMovement = GetComponent<PlayerMovement>();
         // 런타임에 Joint 추가
         joint = gameObject.AddComponent<DistanceJoint2D>();
         joint.enabled = false;
@@ -100,6 +101,12 @@ public class GrappleLauncher : MonoBehaviour
         joint.connectedBody = null;
         grabbedRb = null;
         isAttached = false;
+
+        if((playerMovement.jumpCount == 2))
+        {
+            playerMovement.jumpCount--;
+        }
+
     }
 
     void OnDrawGizmosSelected()

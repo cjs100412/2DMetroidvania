@@ -945,6 +945,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: DashItem
       objectReference: {fileID: 0}
+    - target: {fileID: 5601683815009640173, guid: afabaa7e22f22384da5b95aad77bebdd, type: 3}
+      propertyPath: slowDuration
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5601683815009640173, guid: afabaa7e22f22384da5b95aad77bebdd, type: 3}
+      propertyPath: zoomDuration
+      value: 0.6
+      objectReference: {fileID: 0}
     - target: {fileID: 5812168342429607829, guid: afabaa7e22f22384da5b95aad77bebdd, type: 3}
       propertyPath: m_LocalPosition.x
       value: 744
@@ -148405,6 +148413,10 @@ PrefabInstance:
       propertyPath: wall
       value: 
       objectReference: {fileID: 5958332949060789647}
+    - target: {fileID: 96141517422230166, guid: 44c6457ad7721144fa6f29c6c8f1a844, type: 3}
+      propertyPath: maxHp
+      value: 100
+      objectReference: {fileID: 0}
     - target: {fileID: 96141517422230166, guid: 44c6457ad7721144fa6f29c6c8f1a844, type: 3}
       propertyPath: attackPoint
       value: 

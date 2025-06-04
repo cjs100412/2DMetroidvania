@@ -15,13 +15,20 @@ public class GameBootstrap : MonoBehaviour
 
     private IEnumerator Start()
     {
-        // 1) Persistent 씬은 한 번만 불러오기
+        if (GameManager.I != null && GameManager.I.HasSave)
+        {
+            GameManager.I.LoadGame();
+            yield break;
+        }
+
+        // Persistent 씬은 한 번만 불러오기
         if(GameManager.I == null)
         {
             yield return SceneManager.LoadSceneAsync(persistentSceneName, LoadSceneMode.Additive);
         }
         yield return null;
-        // 2) 이전 Zone 언로드 (빈 값 아닐 때)
+
+        // 이전 Zone 언로드 (빈 값 아닐 때)
         if (!string.IsNullOrEmpty(SceneLoader.CurrentZone))
         {
             Scene prev = SceneManager.GetSceneByName(SceneLoader.CurrentZone);
@@ -31,7 +38,7 @@ public class GameBootstrap : MonoBehaviour
             }
         }
 
-        // 3) 다음 Zone/Spawn 결정 (체크포인트 없으면 초기값 사용)
+        // 다음 Zone/Spawn 결정 (체크포인트 없으면 초기값 사용)
         string nextZone = string.IsNullOrEmpty(SceneLoader.NextZone)
             ? initialZoneName
             : SceneLoader.NextZone;
@@ -39,6 +46,7 @@ public class GameBootstrap : MonoBehaviour
             ? initialSpawnPointName
             : SceneLoader.NextSpawnPoint;
         yield return null;
+
         // 4) 새 Zone 로드 & 스폰
         yield return LoadNewZone(nextZone, nextSpawn);
 
@@ -108,7 +116,7 @@ public class GameBootstrap : MonoBehaviour
         }
         yield return null;
 
-        // ☆ ScreenFader.Instance가 확실히 존재할 때만 FadeIn
+        // ScreenFader.Instance가 확실히 존재할 때만 FadeIn
         if (ScreenFader.Instance != null)
         {
             yield return ScreenFader.Instance.FadeIn();

@@ -20,6 +20,10 @@ public class TitleManager : MonoBehaviour
     public void OnStartButtonEnter()
     {
         SceneManager.LoadScene("Bootstrap");
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.GameStart);
+        }
     }
 
     public void OnControlKeyButtonEnter()
@@ -27,17 +31,28 @@ public class TitleManager : MonoBehaviour
         if (ControlKeyMenu.activeSelf == true)
         {
             ControlKeyMenu.SetActive(false);
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFX.UIExit);
+            }
         }
         else
         {
             ControlKeyMenu.SetActive(true);
-
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFX.UIPopup);
+            }
         }
     }
 
     public void OnControlCancelButtonEnter()
     {
         ControlKeyMenu.SetActive(false);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.UIExit);
+        }
     }
 
     public void OnOptionKeyButtonEnter()
@@ -45,16 +60,28 @@ public class TitleManager : MonoBehaviour
         if (OptionKeyMenu.activeSelf == true)
         {
             OptionKeyMenu.SetActive(false);
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFX.UIExit);
+            }
         }
         else
         {
             OptionKeyMenu.SetActive(true);
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFX.UIPopup);
+            }
         }
     }
 
     public void OnOptionCancelButtonEnter()
     {
         OptionKeyMenu.SetActive(false);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.UIExit);
+        }
     }
 
     public void OnExitKeyButtonEnter()
@@ -62,10 +89,18 @@ public class TitleManager : MonoBehaviour
         if (ExitKeyMenu.activeSelf == true)
         {
             ExitKeyMenu.SetActive(false);
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFX.UIExit);
+            }
         }
         else
         {
             ExitKeyMenu.SetActive(true);
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFX.UIPopup);
+            }
         }
     }   
 
@@ -83,5 +118,9 @@ public class TitleManager : MonoBehaviour
     public void OnExitCancelButtonEnter()
     {
         ExitKeyMenu.SetActive(false);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.UIExit);
+        }
     }
 }

@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: SummonPattern
   m_EditorClassIdentifier: 
   summonPrefab: {fileID: 1569569875887176776, guid: 33ad648e915365749be42df50e7c803f, type: 3}
-  cooldown: 5
+  cooldown: 3
   summonCount: 1
   spawnInterval: 0.2

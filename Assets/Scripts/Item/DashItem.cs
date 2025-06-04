@@ -27,14 +27,14 @@ public class DashItem : MonoBehaviour
 
     void Awake()
     {
-        // 1) 이미 수집된 아이템인지 확인
+        // 이미 수집된 아이템인지 확인
         if (GameManager.I != null && GameManager.I.IsItemCollected(itemID))
         {
             Destroy(gameObject);
             return;
         }
 
-        // 2) 카메라 참조 및 초기 직교 크기 저장
+        // 카메라 참조 및 초기 직교 크기 저장
         cinemachineCamera = GameObject.FindWithTag("Cinemachine")
                               .GetComponent<CinemachineCamera>();
         if (cinemachineCamera != null)
@@ -61,7 +61,10 @@ public class DashItem : MonoBehaviour
             // 3) 이펙트 재생
             if (pickupEffect != null)
                 Instantiate(pickupEffect, transform.position, Quaternion.identity);
-
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFX.Item);
+            }
             // 4) 아이템 비가시화 및 콜라이더 비활성화
             col.enabled = false;
             if (spriteRenderer != null)

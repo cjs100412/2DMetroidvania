@@ -180,7 +180,10 @@ public class LastBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
         if (isDead) return;
         hp -= amount;
         StartCoroutine(RedFlash());
-
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.BossDamaged);
+        }
         if (hp <= 0)
             Die();
     }
@@ -200,6 +203,10 @@ public class LastBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
     {
         if (isDead) return;
         isDead = true;
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.LastBossDead);
+        }
         animator.SetTrigger("isDead");
         if (GameManager.I != null)
         {

@@ -15,7 +15,10 @@ public class HiddenGround : MonoBehaviour
         if (player != null)
         {
             tileMap.color = new Color(1f, 1f, 1f, 0.5f);
-
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFX.Hiddenplace);
+            }
         }
     }
     void OnTriggerExit2D(Collider2D other)

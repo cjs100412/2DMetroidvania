@@ -48,7 +48,10 @@ public class PullAndSprayPattern : ScriptableObject, IBossPattern, ISpawnPattern
     public IEnumerator Execute(BossController boss, Transform player)
     {
         lastUsedTime = Time.time;
-
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.PullAndSpray);
+        }
         // 1) 끌어당기기 애니
         boss.Animator.SetTrigger("Pull");
         yield return null;

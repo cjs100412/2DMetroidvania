@@ -196,6 +196,10 @@ public class DashBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
         if (isDead) return;
         hp -= amount;
         StartCoroutine(RedFlash());
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.BossDamaged);
+        }
         if (hp <= 0) Die();
     }
 

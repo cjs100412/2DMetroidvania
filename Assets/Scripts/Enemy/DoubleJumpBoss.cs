@@ -287,7 +287,10 @@ public class DoubleJumpBoss : MonoBehaviour, IBossDeath
             return;
 
         hp -= amount;
-
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.BossDamaged);
+        }
         // RedFlash 코루틴 실행. spriteRenderer가 null이면 예외 방지.
         if (spriteRenderer != null)
         {

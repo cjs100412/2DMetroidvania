@@ -51,7 +51,10 @@ public class AoeDropSpellPattern : ScriptableObject, IBossPattern
         yield return new WaitForSeconds(dropTime);
 
         Instantiate(explodeEffect, spawnPos, Quaternion.identity);
-
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.AoeExplosion);
+        }
         // 4) ÂøÁö Æø¹ß µ¥¹ÌÁö
         Collider2D[] hits = Physics2D.OverlapCircleAll(
             new Vector2(player.transform.position.x, boss.transform.position.y),

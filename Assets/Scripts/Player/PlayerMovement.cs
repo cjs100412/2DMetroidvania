@@ -231,6 +231,10 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    public void PlayFootstep()
+    {
+        SoundManager.Instance.PlaySFX(SFX.Run);
+    }
 
     private IEnumerator PerformDash()
     {
@@ -269,10 +273,14 @@ public class PlayerMovement : MonoBehaviour
 
         // 2) 공격 애니메이션 트리거 (애니메이터에 isAttack 트리거가 있어야 함)
         animator.SetTrigger("isAttack");
+        
         if (appliedRangeUpgrade)
         {
             GameObject ef = Instantiate(AttackUpgradeEffect, attackPoint.position, Quaternion.identity);
-
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFX.UpgradeAttack);
+            }
             if (transform.localScale.x < 0f)
             {
                 Vector3 s = ef.transform.localScale;
@@ -283,7 +291,10 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             GameObject ef = Instantiate(AttackEffect, attackPoint.position, Quaternion.identity);
-
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(SFX.Attack);
+            }
             if (transform.localScale.x < 0f)
             {
                 Vector3 s = ef.transform.localScale;
@@ -355,8 +366,11 @@ public class PlayerMovement : MonoBehaviour
         gameObject.GetComponent<PlayerHealth>().currentMp--;
 
         // 애니메이터에 ranged 트리거가 있다면
-        animator.SetTrigger("isRangedAttack");
-
+        //animator.SetTrigger("isRangedAttack");
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.RangeAttack);
+        }
         // 투사체 생성 & 발사
         Vector3 spawnPos = attackPoint.position;
         Quaternion rot = Quaternion.identity;

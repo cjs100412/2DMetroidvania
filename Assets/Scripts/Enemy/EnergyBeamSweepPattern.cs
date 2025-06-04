@@ -31,8 +31,12 @@ public class EnergyBeamSweepPattern : ScriptableObject, IBossPattern
 
         // 1) 빔 애니메이션 트리거
         boss.Animator.SetTrigger("isAttack");
-        yield return new WaitForSeconds(0.5f);
 
+        yield return new WaitForSeconds(0.5f);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.Beam);
+        }
         // 2) 빔 인스턴스 생성
         var beam = Instantiate(beamPrefab, boss.transform.position, Quaternion.identity);
         beam.transform.localScale = new Vector3(4f, 32f, 1f);
