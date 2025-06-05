@@ -15,8 +15,8 @@ MonoBehaviour:
   minDistance: 10
   maxDistance: 30
   cooldown: 5
-  duration: 2
-  pullForce: 75
+  duration: 4
+  pullForce: 100
   bulletPrefab: {fileID: 8163343930501831133, guid: ff7467b697dc93e4ca982cb641e468db, type: 3}
   bulletCount: 16
   bulletSpeed: 12
