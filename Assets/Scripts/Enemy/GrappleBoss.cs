@@ -195,7 +195,7 @@ public class GrappleBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
         isDead = true;
         if (SoundManager.Instance != null)
         {
-            SoundManager.Instance.PlaySFX(SFX.GrappleBossDead);
+            SoundManager.Instance.PlaySFX(SFX.BossDead);
         }
         animator.SetTrigger("isDead");
         if (GameManager.I != null)

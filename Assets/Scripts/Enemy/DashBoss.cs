@@ -217,6 +217,10 @@ public class DashBoss : MonoBehaviour, IBossDeath, IProjectileSpawner
         if (isDead) return;
         isDead = true;
         animator.SetTrigger("isDead");
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySFX(SFX.BossDead);
+        }
         if (GameManager.I != null)
         {
             GameManager.I.SetBossDefeated(bossID);

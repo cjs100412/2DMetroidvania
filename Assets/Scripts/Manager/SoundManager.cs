@@ -22,7 +22,7 @@ public enum BGM
 public enum SFX
 {
     Attack, Gold, Run, UpgradeAttack, UIPopup, UIExit, GameStart, EnemyDead, EnemyDamaged, BossDamaged,
-    GrappleBossDead ,LastBossDead, CheckPoint, Portal, RangeAttack, AoeExplosion, JumpAttack, FarRange, PullAndSpray, Beam, Item, Hiddenplace
+    BossDead ,LastBossDead, CheckPoint, Portal, RangeAttack, AoeExplosion, JumpAttack, FarRange, PullAndSpray, Beam, Item, Hiddenplace
 }
 
 [Serializable]
